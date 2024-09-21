@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { MAX_CONTEXT_LENGTH } from './index.js';
 dotenv.config({ override: true });
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY || "123"});
 
 export const getTextGpt = async (
     prompt,
