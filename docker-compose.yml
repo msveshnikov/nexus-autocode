@@ -23,7 +23,6 @@ services:
             - TOGETHER_KEY=${TOGETHER_KEY}
             - OPENAI_KEY=${OPENAI_KEY}
             - GEMINI_KEY=${GEMINI_KEY}
-            - MISTRAL_KEY=${MISTRAL_KEY}
         restart: unless-stopped
         volumes:
             - ./nexus.json:/app/nexus.json

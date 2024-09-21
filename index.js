@@ -4,6 +4,8 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import { verifyToken } from './auth.js';
 import { User, addUserCoins, countTokens, storeUsageStats } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
@@ -16,9 +18,12 @@ import { getImage } from './image.js';
 import { scheduleAction, stopScheduledAction } from './scheduler.js';
 import { handleToolCall } from './tools.js';
 
-dotenv.config({ override: true }); 
+dotenv.config({ override: true });
 
-const ALLOWED_ORIGIN = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const ALLOWED_ORIGIN = [process.env.FRONTEND_URL, 'http://localhost:5000'];
 export const MAX_SEARCH_RESULT_LENGTH = 7000;
 export const MAX_CONTEXT_LENGTH = 20000;
 export const MAX_CHAT_HISTORY_LENGTH = 40;
@@ -81,7 +86,7 @@ app.post('/interact', verifyToken, async (req, res) => {
             instructions,
             chatHistory,
             country,
-            lang, 
+            lang,
             user,
             userInput,
             model
@@ -223,6 +228,12 @@ app.post('/api/execute-tool', verifyToken, async (req, res) => {
     }
 });
 
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'landing.html'));
+});
+
 app.use('/api', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
 });
@@ -329,14 +340,6 @@ async function getModelResponse(
             temperature,
             fileBytesBase64,
             fileType,
-            userId,
-            model,
-            webTools
-        );
-    } else if (model?.startsWith('mistral-large')) {
-        textResponse = await getTextMistralLarge(
-            contextPrompt,
-            temperature,
             userId,
             model,
             webTools

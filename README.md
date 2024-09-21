@@ -30,7 +30,7 @@ capable of solving complex tasks using various tools and external connectors.
 
 ### AI Models
 
--   Integration with multiple AI providers (OpenAI, Anthropic, Google, Mistral, Together AI)
+-   Integration with multiple AI providers (OpenAI, Anthropic, Google, Together AI)
 -   Model pairing for cost-effective and high-performance task execution
 -   Meta-learning for quick adaptation to new tasks
 -   Federated learning for privacy-preserving model updates
@@ -104,7 +104,7 @@ capable of solving complex tasks using various tools and external connectors.
 ## Project Structure
 
 -   Docker support for containerization
--   Separate modules for different AI providers (Claude, Gemini, Mistral, OpenAI, Together)
+-   Separate modules for different AI providers (Claude, Gemini, OpenAI, Together)
 -   Utility modules for common functionalities (auth, email, image processing, search, YouTube)
 -   Scheduler for task management
 -   Tools module for integrating various tools
@@ -118,14 +118,6 @@ capable of solving complex tasks using various tools and external connectors.
 4. Run the application: `npm start`
 5. Access the web dashboard at `http://localhost:5000`
 
-## Contributing
-
-We welcome contributions from the community. Please refer to our contribution guidelines for more
-information on how to get involved.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
 
 # TODO
 
