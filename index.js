@@ -17,6 +17,9 @@ import { fetchPageContent } from './search.js';
 import { getImage } from './image.js';
 import { scheduleAction, stopScheduledAction } from './scheduler.js';
 import { handleToolCall } from './tools.js';
+import ejs from 'ejs';
+import http from 'http';
+import { Server } from 'socket.io';
 
 dotenv.config({ override: true });
 
@@ -30,6 +33,14 @@ export const MAX_CHAT_HISTORY_LENGTH = 40;
 export const contentFolder = './content';
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: ALLOWED_ORIGIN,
+        methods: ['GET', 'POST']
+    }
+});
+
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '100mb' }));
 app.use(cors({ origin: ALLOWED_ORIGIN }));
@@ -229,16 +240,38 @@ app.post('/api/execute-tool', verifyToken, async (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'public'));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'landing.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/app', (req, res) => {
+    res.render('app');
 });
 
 app.use('/api', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
 });
 
-app.listen(5000, () => {
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    socket.on('taskProgress', (progress) => {
+        io.emit('taskProgressUpdate', progress);
+    });
+
+    socket.on('subAgentLog', (log) => {
+        io.emit('subAgentLogUpdate', log);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
+
+server.listen(5000, () => {
     console.log(`🚀 Server started on port 5000`);
 });
 

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold">Nexus Dashboard</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Task Initiation</h2>
+            <form id="taskForm" class="space-y-4">
+                <div>
+                    <label for="taskInput" class="block text-sm font-medium text-gray-700">Task Description:</label>
+                    <textarea id="taskInput" name="taskInput" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
+                </div>
+                <div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                        Start Task
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Task Progress</h2>
+            <div id="taskProgress" class="bg-white p-4 rounded shadow">
+                <p>No active task</p>
+            </div>
+        </section>
+
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Sub-Agent Logs</h2>
+            <div id="subAgentLogs" class="bg-white p-4 rounded shadow h-64 overflow-y-auto">
+                <p>No logs available</p>
+            </div>
+        </section>
+
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Statistics</h2>
+            <div id="statistics" class="bg-white p-4 rounded shadow">
+                <canvas id="statisticsChart"></canvas>
+            </div>
+        </section>
+
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Artifacts</h2>
+            <div id="artifacts" class="bg-white p-4 rounded shadow">
+                <ul id="artifactList" class="list-disc pl-5"></ul>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const taskForm = document.getElementById('taskForm');
+        const taskProgress = document.getElementById('taskProgress');
+        const subAgentLogs = document.getElementById('subAgentLogs');
+        const statisticsChart = document.getElementById('statisticsChart');
+        const artifactList = document.getElementById('artifactList');
+
+        let chart;
+
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const taskInput = document.getElementById('taskInput').value;
+            try {
+                const response = await axios.post('/api/execute-tool', {
+                    toolName: 'initiateTask',
+                    params: { taskDescription: taskInput }
+                });
+                updateTaskProgress(response.data.result);
+            } catch (error) {
+                console.error('Error initiating task:', error);
+                taskProgress.innerHTML = '<p class="text-red-600">Error initiating task</p>';
+            }
+        });
+
+        function updateTaskProgress(progress) {
+            taskProgress.innerHTML = `<p>${progress}</p>`;
+        }
+
+        function addSubAgentLog(log) {
+            const logElement = document.createElement('p');
+            logElement.textContent = log;
+            subAgentLogs.appendChild(logElement);
+            subAgentLogs.scrollTop = subAgentLogs.scrollHeight;
+        }
+
+        async function fetchStatistics() {
+            try {
+                const response = await axios.get('/api/user/info');
+                const userInfo = response.data;
+                updateStatisticsChart(userInfo); 
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+                statisticsChart.innerHTML = '<p class="text-red-600">Error loading statistics</p>';
+            }
+        }
+
+        function updateStatisticsChart(userInfo) {
+            const ctx = statisticsChart.getContext('2d');
+            if (chart) {
+                chart.destroy();
+            }
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Total Tasks', 'Completed Tasks'],
+                    datasets: [{
+                        label: 'Task Statistics',
+                        data: [userInfo.totalTasks || 0, userInfo.completedTasks || 0],
+                        backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(75, 192, 192, 0.5)'],
+                        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(75, 192, 192, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchArtifacts() {
+            try {
+                const response = await axios.get('/api/artifacts');
+                const artifacts = response.data;
+                updateArtifactList(artifacts);
+            } catch (error) {
+                console.error('Error fetching artifacts:', error);
+                artifactList.innerHTML = '<li class="text-red-600">Error loading artifacts</li>';
+            }
+        }
+
+        function updateArtifactList(artifacts) {
+            artifactList.innerHTML = '';
+            artifacts.forEach(artifact => {
+                const li = document.createElement('li');
+                li.textContent = `${artifact.name} (${artifact.type})`;
+                artifactList.appendChild(li);
+            });
+        }
+
+        fetchStatistics();
+        fetchArtifacts();
+
+        const socket = new WebSocket('ws://' + window.location.host);
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'subAgentLog') {
+                addSubAgentLog(data.log);
+            } else if (data.type === 'taskProgress') {
+                updateTaskProgress(data.progress);
+            } else if (data.type === 'statisticsUpdate') {
+                updateStatisticsChart(data.userInfo);
+            } else if (data.type === 'artifactUpdate') {
+                fetchArtifacts();
+            }
+        };
+    </script>
+</body>
+</html>

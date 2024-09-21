@@ -20,6 +20,7 @@
         "cheerio": "^1.0.0",
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",
+        "ejs": "^3.1.10",
         "express": "^4.21.0",
         "express-rate-limit": "^7.4.0",
         "ical-generator": "^8.0.0",
@@ -36,6 +37,7 @@
         "openai": "^4.63.0",
         "pdf-parse": "1.1.1",
         "sharp": "^0.33.5",
+        "socket.io": "^4.8.0",
         "xlsx": "^0.18.5",
         "youtube-transcript": "^1.2.1"
     },
