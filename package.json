@@ -8,10 +8,10 @@
         "start": "node index.js",
         "dev": "nodemon index.js",
         "lint": "eslint .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "autocode": "npx autocode-ai"
     },
-    "author": "",
-    "license": "ISC",
+    "license": "MIT",
     "dependencies": {
         "@anthropic-ai/sdk": "^0.27.3",
         "@google-cloud/vertexai": "^1.7.0",

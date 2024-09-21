@@ -3,6 +3,12 @@
 Agentic AI Framework for Complex Task Solving. This project aims to develop an advanced AI framework
 capable of solving complex tasks using various tools and external connectors.
 
+![alt text](public/AI.png)
+
+# DEMO
+
+https://nexus-autocode.onrender.com/
+
 ## Features
 
 -   Multi-agent collaboration
@@ -151,3 +157,7 @@ information on how to get involved.
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+# TODO
+
+-   improve design, use colors #F662BA and 6EFFF5 and /public/AI.png
