@@ -8,7 +8,7 @@ import { Artifact } from './model/Artifact.js';
 dotenv.config({ override: true });
 process.env['GOOGLE_APPLICATION_CREDENTIALS'] = './nexus.json';
 
-const renameProperty = (obj) => {
+export const renameProperty = (obj) => {
     const newObj = { ...obj };
     newObj['parameters'] = newObj['input_schema'];
     delete newObj['input_schema'];

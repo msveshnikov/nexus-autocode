@@ -7,17 +7,16 @@ import dotenv from 'dotenv';
 import { verifyToken } from './auth.js';
 import { User, addUserCoins, countTokens, storeUsageStats } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
-import CustomGPT from './model/CustomGPT.js';
 import { getTextGemini, getTextGeminiFinetune } from './gemini.js';
 import { getTextClaude } from './claude.js';
 import { getTextTogether } from './together.js';
 import { getTextGpt } from './openai.js';
-import { getTextMistralLarge } from './mistral.js';
 import { fetchPageContent } from './search.js';
 import { getImage } from './image.js';
 import { scheduleAction, stopScheduledAction } from './scheduler.js';
+import { handleToolCall } from './tools.js';
 
-dotenv.config({ override: true });
+dotenv.config({ override: true }); 
 
 const ALLOWED_ORIGIN = [process.env.FRONTEND_URL, 'http://localhost:3000'];
 export const MAX_SEARCH_RESULT_LENGTH = 7000;
@@ -63,8 +62,7 @@ app.post('/interact', verifyToken, async (req, res) => {
             fileType,
             tools: webTools,
             lang,
-            model,
-            customGPT
+            model
         } = req.body;
         const country = req.headers['geoip_country_code'];
         const user = await User.findById(req.user.id);
@@ -78,18 +76,12 @@ app.post('/interact', verifyToken, async (req, res) => {
 
         let instructions = '';
         let GPT;
-        if (customGPT) {
-            GPT = await CustomGPT.findOne({ name: customGPT });
-            if (GPT) {
-                instructions = GPT.knowledge + '\n\n' + GPT.instructions;
-            }
-        }
 
         const contextPrompt = buildContextPrompt(
             instructions,
             chatHistory,
             country,
-            lang,
+            lang, 
             user,
             userInput,
             model
@@ -218,6 +210,16 @@ app.delete('/api/schedule', verifyToken, async (req, res) => {
         res.json({ message: result });
     } catch (error) {
         res.status(500).json({ error: 'Error stopping scheduled action: ' + error.message });
+    }
+});
+
+app.post('/api/execute-tool', verifyToken, async (req, res) => {
+    try {
+        const { toolName, params } = req.body;
+        const result = await handleToolCall(toolName, params, req.user.id);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error executing tool: ' + error.message });
     }
 });
 

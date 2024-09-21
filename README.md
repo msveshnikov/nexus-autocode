@@ -116,7 +116,7 @@ capable of solving complex tasks using various tools and external connectors.
 2. Install dependencies: `npm install`
 3. Set up environment variables for API keys and configurations
 4. Run the application: `npm start`
-5. Access the web dashboard at `http://localhost:3000`
+5. Access the web dashboard at `http://localhost:5000`
 
 ## Contributing
 
@@ -129,5 +129,5 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 # TODO
 
--   add web dashboard UI to initiate main task and track implementation (by sub-agents AI and their
+-   add web dashboard on http://localhost:5000` UI to initiate main task and track implementation (by sub-agents AI and their
     log)

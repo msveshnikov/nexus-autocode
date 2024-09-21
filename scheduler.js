@@ -5,7 +5,6 @@ import { getTextGpt } from './openai.js';
 import { getTextGemini } from './gemini.js';
 import { getTextClaude } from './claude.js';
 import { getTextTogether } from './together.js';
-import { getTextMistralLarge } from './mistral.js';
 import { emailSignature } from './email.js';
 
 const scheduledActions = {};
@@ -61,15 +60,7 @@ export const scheduleAction = async (action, schedule, userId) => {
                         true
                     );
                     break;
-                case 'mistral-large-latest':
-                    result = await getTextMistralLarge(
-                        prompt,
-                        0.7,
-                        userId,
-                        user.preferredModel,
-                        true
-                    );
-                    break;
+
                 default:
                     result = await getTextTogether(prompt, 0.7, userId, user.preferredModel, true);
             }
