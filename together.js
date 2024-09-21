@@ -1,22 +1,22 @@
-import OpenAI from "openai";
-import { handleToolCall, tools } from "./tools.js";
-import { renameProperty } from "./gemini.js";
-import dotenv from "dotenv";
+import OpenAI from 'openai';
+import { handleToolCall, tools } from './tools.js';
+import { renameProperty } from './gemini.js';
+import dotenv from 'dotenv';
 dotenv.config({ override: true });
 
 export const getTextTogether = async (prompt, temperature, userId, model, webTools) => {
     const openai = new OpenAI({
         apiKey: process.env.TOGETHER_KEY,
-        baseURL: "https://api.together.xyz/v1",
+        baseURL: 'https://api.together.xyz/v1'
     });
-    const openAiTools = tools.map(renameProperty).map((f) => ({ type: "function", function: f }));
+    const openAiTools = tools.map(renameProperty).map((f) => ({ type: 'function', function: f }));
     const messages = [
         {
-            role: "system",
+            role: 'system',
             content:
-                "You are a helpful assistant that can access external functions. The responses from these function calls will be appended to this dialogue. Please provide responses based on the information from these function calls.",
+                'You are a helpful assistant that can access external functions. The responses from these function calls will be appended to this dialogue. Please provide responses based on the information from these function calls.'
         },
-        { role: "user", content: prompt },
+        { role: 'user', content: prompt }
     ];
 
     const getResponse = async () => {
@@ -25,7 +25,7 @@ export const getTextTogether = async (prompt, temperature, userId, model, webToo
             max_tokens: 2048,
             messages,
             temperature: webTools ? 0 : temperature || 0.5,
-            tools: webTools ? openAiTools : null,
+            tools: webTools ? openAiTools : null
         });
         return completion?.choices?.[0]?.message;
     };
@@ -42,10 +42,10 @@ export const getTextTogether = async (prompt, temperature, userId, model, webToo
                 userId
             );
             messages.push({
-                role: "tool",
+                role: 'tool',
                 name: toolCall.name,
                 tool_call_id: toolCall.id,
-                content: toolResult,
+                content: toolResult
             });
         }
         response = await getResponse();

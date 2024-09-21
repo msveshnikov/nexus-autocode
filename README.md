@@ -1,6 +1,7 @@
 # Nexus
 
-Agentic AI Framework for Complex Task Solving. This project aims to develop an advanced AI framework capable of solving complex tasks using various tools and external connectors.
+Agentic AI Framework for Complex Task Solving. This project aims to develop an advanced AI framework
+capable of solving complex tasks using various tools and external connectors.
 
 ## Features
 
@@ -11,10 +12,10 @@ Agentic AI Framework for Complex Task Solving. This project aims to develop an a
 -   Adaptive learning capabilities
 -   Real-time decision making
 -   Cross-domain knowledge transfer
--   use RAG for knowledge
+-   RAG for knowledge management
 -   Explainable AI outputs
--   Accumulate artifacts as a results of work
--   Web UI via ExpressJS to initiate tasks and check for progress and statistics
+-   Artifact accumulation from work results
+-   Web UI via ExpressJS for task initiation, progress tracking, and statistics
 
 ## Design Considerations
 
@@ -25,12 +26,12 @@ Agentic AI Framework for Complex Task Solving. This project aims to develop an a
 -   Event-driven communication between components
 -   Containerization for consistent deployment
 -   Service mesh for improved inter-service communication
--   NodeJS, ES6 imports, ExpressJS for dashboard
+-   NodeJS with ES6 imports and ExpressJS for dashboard
 
 ### AI Models
 
--   Use models with good tooling (gpt-4/gpt-3.5-turbo, gemini pro/gemini nano, Claude 3/Claude 2.1)
--   Pair models (cost-effective and high-performance) for different tasks
+-   Integration with multiple AI providers (OpenAI, Anthropic, Google, Mistral, Together AI)
+-   Model pairing for cost-effective and high-performance task execution
 -   Meta-learning for quick adaptation to new tasks
 -   Federated learning for privacy-preserving model updates
 -   Model compression techniques for edge deployment
@@ -41,14 +42,15 @@ Agentic AI Framework for Complex Task Solving. This project aims to develop an a
 -   Automatic tool discovery and registration
 -   Version control for tool configurations
 -   A/B testing framework for tool performance evaluation
+-   Dedicated tools for email, image processing, search, and YouTube interactions
 
 ### External Connectors
 
--   Integration with shell and Python
+-   Integration with shell and Python scripts
 -   Web search and information retrieval
 -   Email and messaging platforms
--   Payment gateways and financial services
 -   Cloud storage services
+-   YouTube data extraction
 
 ### Task Management
 
@@ -63,6 +65,7 @@ Agentic AI Framework for Complex Task Solving. This project aims to develop an a
 -   Role-based access control
 -   Audit logging for all system actions
 -   Compliance with data protection regulations (e.g., GDPR, CCPA)
+-   Secure handling of API keys and sensitive information
 
 ### User Interface
 
@@ -77,12 +80,12 @@ Agentic AI Framework for Complex Task Solving. This project aims to develop an a
 -   Caching mechanisms for frequently accessed data
 -   Asynchronous processing for non-blocking operations
 -   Load balancing for optimal resource utilization
--   Prompt caching
+-   Prompt caching for improved response times
 
 ### Documentation and Knowledge Management
 
 -   Auto-generated API documentation
--   RAG
+-   RAG-based knowledge retrieval and management
 -   Knowledge base for common issues and best practices
 
 ### Extensibility
@@ -97,3 +100,34 @@ Agentic AI Framework for Complex Task Solving. This project aims to develop an a
 -   Transparency in decision-making processes
 -   Ethical guidelines for AI-driven actions
 -   Mechanisms for human oversight and intervention
+
+## Project Structure
+
+-   Docker support for containerization
+-   Separate modules for different AI providers (Claude, Gemini, Mistral, OpenAI, Together)
+-   Utility modules for common functionalities (auth, email, image processing, search, YouTube)
+-   Scheduler for task management
+-   Tools module for integrating various tools
+-   Python scripts for shell interactions on different platforms
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables for API keys and configurations
+4. Run the application: `npm start`
+5. Access the web dashboard at `http://localhost:3000`
+
+## Contributing
+
+We welcome contributions from the community. Please refer to our contribution guidelines for more
+information on how to get involved.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+# TODO
+
+-   add web dashboard UI to initiate main task and track implementation (by sub-agents AI and their
+    log)

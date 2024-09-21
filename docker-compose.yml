@@ -1,43 +1,42 @@
-version: "3.8"
+version: '3.8'
 
 services:
     backend:
-        image: extender777/allchat-backend
+        build:
+            context: .
+            dockerfile: Dockerfile
         ports:
-            - "6001:5000"
-            - "6002:6002"
+            - '5000:5000'
+            - '6002:6002'
         environment:
             - NODE_ENV=production
             - GOOGLE_KEY=${GOOGLE_KEY}
             - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
             - STABILITY_KEY=${STABILITY_KEY}
             - CLAUDE_KEY=${CLAUDE_KEY}
-            - STRIPE_KEY=${STRIPE_KEY}
-            - STRIPE_WH_SECRET=${STRIPE_WH_SECRET}
             - JWT_TOKEN=${JWT_TOKEN}
             - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
             - YAHOO_FINANCE_API_KEY=${YAHOO_FINANCE_API_KEY}
             - TELEGRAM_KEY=${TELEGRAM_KEY}
             - EMAIL=${EMAIL}
             - EMAIL_PASSWORD=${EMAIL_PASSWORD}
-            - FRONTEND_URL=${FRONTEND_URL}
             - TOGETHER_KEY=${TOGETHER_KEY}
             - OPENAI_KEY=${OPENAI_KEY}
             - GEMINI_KEY=${GEMINI_KEY}
             - MISTRAL_KEY=${MISTRAL_KEY}
         restart: unless-stopped
         volumes:
-            - ./allchat.json:/app/allchat.json
+            - ./nexus.json:/app/nexus.json
+            - ./content:/app/content
         depends_on:
             - mongodb
+            - python-shell
 
     mongodb:
         image: mongo:latest
         volumes:
             - mongo-data:/data/db
         restart: unless-stopped
-        logging:
-            driver: none
 
     python-shell:
         image: python:3.12
@@ -46,11 +45,12 @@ services:
             - ./requirements.txt:/requirements.txt
         restart: unless-stopped
         working_dir: /app
-        command: ["sh", "-c", "pip install --no-cache-dir -r /requirements.txt && python -u shell.py"]
+        command:
+            ['sh', '-c', 'pip install --no-cache-dir -r /requirements.txt && python -u shell.py']
         deploy:
             resources:
                 limits:
-                    cpus: "0.5"
+                    cpus: '0.5'
                     memory: 512M
         environment:
             - PYTHONUNBUFFERED=1

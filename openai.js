@@ -1,44 +1,50 @@
-import OpenAI from "openai";
-import { handleToolCall, tools } from "./tools.js";
-import { renameProperty } from "./gemini.js";
-import dotenv from "dotenv";
+import OpenAI from 'openai';
+import { handleToolCall, tools } from './tools.js';
+import { renameProperty } from './gemini.js';
+import dotenv from 'dotenv';
+import { MAX_CONTEXT_LENGTH } from './index.js';
 dotenv.config({ override: true });
 
-export const getTextGpt = async (prompt, temperature, fileBytesBase64, fileType, userId, model, webTools) => {
-    if (model.startsWith("gpt-4o") && userId !== "65fe9b2dedac81e8fa3c19bc") {
-        model = "gpt-4o-mini";
-    }
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
-    const openAiTools = tools.map(renameProperty).map((f) => ({ type: "function", function: f }));
+export const getTextGpt = async (
+    prompt,
+    temperature,
+    fileBytesBase64,
+    fileType,
+    userId,
+    model,
+    webTools
+) => {
+    const openAiTools = tools.map(renameProperty).map((f) => ({ type: 'function', function: f }));
     const messages = [
         {
-            role: "user",
+            role: 'user',
             content: [
-                { type: "text", text: prompt },
+                { type: 'text', text: prompt },
                 ...(fileType && fileBytesBase64
                     ? [
                           {
-                              type: "image_url",
+                              type: 'image_url',
                               image_url: {
                                   url: `data:${
-                                      fileType === "png" ? "image/png" : "image/jpeg"
-                                  };base64,${fileBytesBase64}`,
-                              },
-                          },
+                                      fileType === 'png' ? 'image/png' : 'image/jpeg'
+                                  };base64,${fileBytesBase64}`
+                              }
+                          }
                       ]
-                    : []),
-            ],
-        },
+                    : [])
+            ]
+        }
     ];
 
     const getResponse = async () => {
         const completion = await openai.chat.completions.create({
-            model: model || "gpt-3.5-turbo",
+            model: model || 'gpt-3.5-turbo',
             max_tokens: 2048,
-            messages,
+            messages: messages.slice(-MAX_CONTEXT_LENGTH),
             temperature: temperature || 0.7,
-            tools: webTools ? openAiTools : null,
+            tools: webTools ? openAiTools : null
         });
         return completion?.choices?.[0]?.message;
     };
@@ -55,14 +61,22 @@ export const getTextGpt = async (prompt, temperature, fileBytesBase64, fileType,
                 userId
             );
             messages.push({
-                role: "tool",
+                role: 'tool',
                 name: toolCall.name,
                 tool_call_id: toolCall.id,
-                content: toolResult,
+                content: toolResult
             });
         }
         response = await getResponse();
         iterationCount++;
     }
     return response?.content;
+};
+
+export const generateEmbedding = async (text) => {
+    const response = await openai.embeddings.create({
+        model: 'text-embedding-ada-002',
+        input: text
+    });
+    return response.data[0].embedding;
 };
