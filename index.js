@@ -17,7 +17,6 @@ import { fetchPageContent } from './search.js';
 import { getImage } from './image.js';
 import { scheduleAction, stopScheduledAction } from './scheduler.js';
 import { handleToolCall } from './tools.js';
-import ejs from 'ejs';
 import http from 'http';
 import { Server } from 'socket.io';
 
