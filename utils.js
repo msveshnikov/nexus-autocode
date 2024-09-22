@@ -1,9 +1,10 @@
 import path from 'path';
+import fs from 'fs';
 import nodemailer from 'nodemailer';
 import hbs from 'nodemailer-express-handlebars';
 import dotenv from 'dotenv';
 import { fetchPageContent } from './search.js';
-import { MAX_SEARCH_RESULT_LENGTH } from './index.js';
+import { contentFolder, MAX_SEARCH_RESULT_LENGTH } from './index.js';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
@@ -100,4 +101,35 @@ export async function processUrlContent(userInput) {
         }
     }
     return userInput;
+}
+
+export async function executePython(code) {
+    const pythonServerUrl =
+        process.env.NODE_ENV === 'production'
+            ? 'http://python-shell:8000'
+            : 'http://localhost:8000';
+    const response = await fetch(pythonServerUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain'
+        },
+        body: code
+    });
+    const data = await response.text();
+    if (response.ok) {
+        const jsonData = JSON.parse(data);
+        let output = jsonData.output;
+        const newFiles = jsonData.new_files;
+        for (const [filePath, base64Content] of Object.entries(newFiles)) {
+            const fileName = path.basename(filePath);
+            const fileContent = Buffer.from(base64Content, 'base64');
+            const fileSavePath = path.join(contentFolder, fileName);
+            fs.writeFileSync(fileSavePath, fileContent);
+            const hyperlink = `[${fileName}](/api/get?file=${encodeURIComponent(fileName)})`;
+            output += `\n${hyperlink}`;
+        }
+        return output;
+    } else {
+        return data;
+    }
 }

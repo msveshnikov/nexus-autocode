@@ -1,15 +1,16 @@
 import nodemailer from 'nodemailer';
-import fs from 'fs';
-import path from 'path';
 import { fetchPageContent, fetchSearchResults, googleNews } from './search.js';
 import { User, addUserCoins } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
 import { scheduleAction, stopScheduledAction } from './scheduler.js';
-import { MAX_SEARCH_RESULT_LENGTH, contentFolder, toolsUsed } from './index.js';
+import { MAX_SEARCH_RESULT_LENGTH, toolsUsed } from './index.js';
 import { summarizeYouTubeVideo } from './youtube.js';
 import TelegramBot from 'node-telegram-bot-api';
 import ical from 'ical-generator';
 import { emailSignature } from './email.js';
+import { getImage } from './image.js';
+import { executePython } from './utils.js';
+import axios from 'axios';
 
 const bot = new TelegramBot(process.env.TELEGRAM_KEY);
 const transporter = nodemailer.createTransport({
@@ -328,6 +329,34 @@ export const tools = [
             },
             required: ['artifactName', 'content', 'type']
         }
+    },
+    {
+        name: 'generate_image',
+        description: 'Generate an image based on the provided description.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                description: {
+                    type: 'string',
+                    description: 'The description of the image to generate'
+                }
+            },
+            required: ['description']
+        }
+    },
+    {
+        name: 'initiateTask',
+        description: 'Initiate a new task for processing.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskDescription: {
+                    type: 'string',
+                    description: 'The description of the task to initiate'
+                }
+            },
+            required: ['taskDescription']
+        }
     }
 ];
 
@@ -380,8 +409,12 @@ export const handleToolCall = async (name, args, userId) => {
             return sendUserFeedback(args.feedback);
         case 'save_artifact':
             return saveArtifact(args.artifactName, args.content, args.type, userId);
+        case 'generate_image':
+            return generateImage(args.description);
+        case 'initiateTask':
+            return initiateTask(args.taskDescription, userId);
         default:
-            console.error(`Unsupported function call: ${name}`);
+            throw new Error(`Unsupported function call: ${name}`);
     }
 };
 
@@ -390,25 +423,23 @@ async function getWeather(location) {
         const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${process.env.OPENWEATHER_API_KEY}`;
         const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${process.env.OPENWEATHER_API_KEY}`;
         const [weatherResponse, forecastResponse] = await Promise.all([
-            fetch(weatherUrl),
-            fetch(forecastUrl)
+            axios.get(weatherUrl),
+            axios.get(forecastUrl)
         ]);
-        const [weatherData, forecastData] = await Promise.all([
-            weatherResponse.json(),
-            forecastResponse.json()
-        ]);
+        const [weatherData, forecastData] = [weatherResponse.data, forecastResponse.data];
         const { name, weather, main } = weatherData;
         const { list } = forecastData;
 
         const currentWeather = `In ${name}, the weather is ${
             weather?.[0]?.description
-        } with a temperature of ${Math.round(main?.temp - 273)}°C`;
+        } with a temperature of ${Math.round(main?.temp - 273.15)}°C`;
 
         const fiveDayForecast = list
             ?.filter((item) => item.dt_txt.includes('12:00:00'))
+            ?.slice(0, 5)
             ?.map((item) => {
                 const date = new Date(item.dt * 1000).toLocaleDateString();
-                const temperature = Math.round(item.main.temp - 273);
+                const temperature = Math.round(item.main.temp - 273.15);
                 const description = item.weather[0].description;
                 return `On ${date}, the weather will be ${description} with a temperature of ${temperature}°C`;
             })
@@ -417,52 +448,36 @@ async function getWeather(location) {
         return `${currentWeather}\n\nFive-day forecast:\n${fiveDayForecast}`;
     } catch (error) {
         console.error('Error fetching weather:', error);
-        return 'Error fetching weather:' + error.message;
+        return 'Error fetching weather: ' + error.message;
     }
 }
 
 async function getStockPrice(ticker) {
     try {
-        const apiUrl = `https://yfapi.net/v8/finance/chart/${ticker}?range=1wk&interval=1d&lang=en-US&region=US&includePrePost=false&corsDomain=finance.yahoo.com`;
-        const response = await fetch(apiUrl, {
-            headers: {
-                'X-API-KEY': process.env.YAHOO_FINANCE_API_KEY
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}`);
-        }
-
-        const data = await response.json();
-        const stockPrices = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
-        return `Last week's stock prices: ${stockPrices?.join(', ')}`;
+        const apiUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${process.env.ALPHAVANTAGE_API_KEY}`;
+        const response = await axios.get(apiUrl);
+        const data = response.data;
+        const timeSeries = data['Time Series (Daily)'];
+        const lastWeekPrices = Object.entries(timeSeries)
+            .slice(0, 7)
+            .map(([date, values]) => `${date}: $${values['4. close']}`);
+        return `Last week's stock prices for ${ticker}:\n${lastWeekPrices.join('\n')}`;
     } catch (error) {
         console.error('Error fetching stock price:', error);
-        return 'Error fetching stock price:' + error.message;
+        return 'Error fetching stock price: ' + error.message;
     }
 }
 
 async function getFxRate(baseCurrency, quoteCurrency) {
     try {
-        const apiUrl = `https://yfapi.net/v6/finance/quote?symbols=${
-            baseCurrency + quoteCurrency + '=X'
-        }`;
-        const response = await fetch(apiUrl, {
-            headers: {
-                'X-API-KEY': process.env.YAHOO_FINANCE_API_KEY
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}`);
-        }
-        const data = await response.json();
-        return `Current exchange rates for ${baseCurrency + quoteCurrency + '=X'}: ${
-            data?.quoteResponse?.result?.[0]?.regularMarketPrice
-        }. Additional info: ${JSON.stringify(data?.quoteResponse?.result?.[0])}`;
+        const apiUrl = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${baseCurrency}&to_currency=${quoteCurrency}&apikey=${process.env.ALPHAVANTAGE_API_KEY}`;
+        const response = await axios.get(apiUrl);
+        const data = response.data;
+        const exchangeRate = data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
+        return `Current exchange rate for ${baseCurrency}/${quoteCurrency}: ${exchangeRate}`;
     } catch (error) {
         console.error('Error fetching FX rates:', error);
-        return 'Error fetching FX rates:' + error.message;
+        return 'Error fetching FX rates: ' + error.message;
     }
 }
 
@@ -471,7 +486,7 @@ async function sendTelegramMessage(chatId, message) {
         await bot.sendMessage(chatId, message);
         return 'Telegram message sent successfully.';
     } catch (error) {
-        return 'Error sending Telegram message:' + error.message;
+        return 'Error sending Telegram message: ' + error.message;
     }
 }
 
@@ -504,37 +519,6 @@ function getCurrentTimeUTC() {
     return `The current time in UTC is: ${new Date().toUTCString()}`;
 }
 
-async function executePython(code) {
-    const pythonServerUrl =
-        process.env.NODE_ENV === 'production'
-            ? 'http://python-shell:8000'
-            : 'http://localhost:8000';
-    const response = await fetch(pythonServerUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain'
-        },
-        body: code
-    });
-    const data = await response.text();
-    if (response.ok) {
-        const jsonData = JSON.parse(data);
-        let output = jsonData.output;
-        const newFiles = jsonData.new_files;
-        for (const [filePath, base64Content] of Object.entries(newFiles)) {
-            const fileName = path.basename(filePath);
-            const fileContent = Buffer.from(base64Content, 'base64');
-            const fileSavePath = path.join(contentFolder, fileName);
-            fs.writeFileSync(fileSavePath, fileContent);
-            const hyperlink = `[${fileName}](/api/get?file=${encodeURIComponent(fileName)})`;
-            output += `\n${hyperlink}`;
-        }
-        return output;
-    } else {
-        return data;
-    }
-}
-
 async function getLatestNews(lang) {
     const newsResults = await googleNews(lang);
     return newsResults.map((n) => n.title + ' ' + n.description).join('\n');
@@ -558,14 +542,14 @@ async function persistUserInfo(key, value, userId) {
         return `User information ${key}: ${value} persisted successfully.`;
     } catch (error) {
         console.error('Error persisting user information:', error);
-        return 'Error persisting user information:' + error.message;
+        return 'Error persisting user information: ' + error.message;
     }
 }
 
 async function removeUserInfo(userId) {
     try {
         const user = await User.findById(userId);
-        user.info = {};
+        user.info = new Map();
         await user.save();
         await Artifact.deleteMany({ user: userId });
         return `User information and all associated artifacts removed successfully for user ${userId}.`;
@@ -666,7 +650,7 @@ async function sendUserFeedback(feedback) {
 
 async function saveArtifact(artifactName, content, type, userId) {
     try {
-        let artifact = await Artifact.findOne({ userId, name: artifactName });
+        let artifact = await Artifact.findOne({ user: userId, name: artifactName });
 
         if (artifact) {
             artifact.content = content;
@@ -686,5 +670,28 @@ async function saveArtifact(artifactName, content, type, userId) {
     } catch (error) {
         console.error('Error saving artifact:', error);
         return 'Error saving artifact: ' + error.message;
+    }
+}
+
+async function generateImage(description) {
+    try {
+        const imageUrl = await getImage(description);
+        return `Image generated successfully. URL: ${imageUrl}`;
+    } catch (error) {
+        console.error('Error generating image:', error);
+        return 'Error generating image: ' + error.message;
+    }
+}
+
+async function initiateTask(taskDescription, userId) {
+    try {
+        const user = await User.findById(userId);
+        user.totalTasks = (user?.totalTasks || 0) + 1;
+        await user.save();
+
+        return `Task initiated: ${taskDescription}`;
+    } catch (error) {
+        console.error('Error initiating task:', error);
+        return 'Error initiating task: ' + error.message;
     }
 }

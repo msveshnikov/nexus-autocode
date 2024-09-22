@@ -48,7 +48,37 @@
         </header>
 
         <main class="container mx-auto mt-8 p-4">
-            <section class="mb-8 bg-white rounded-lg shadow-md p-6">
+            <section id="authSection" class="mb-8 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-primary">Authentication</h2>
+                <div id="loginForm" class="space-y-4">
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Email"
+                        class="w-full p-2 border rounded"
+                    />
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Password"
+                        class="w-full p-2 border rounded"
+                    />
+                    <button
+                        onclick="login()"
+                        class="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
+                    >
+                        Login
+                    </button>
+                    <button
+                        onclick="signup()"
+                        class="bg-secondary text-primary px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
+                    >
+                        Sign Up
+                    </button>
+                </div>
+            </section>
+
+            <section id="taskSection" class="mb-8 bg-white rounded-lg shadow-md p-6 hidden">
                 <h2 class="text-2xl font-bold mb-4 text-primary">Task Initiation</h2>
                 <form id="taskForm" class="space-y-4">
                     <div>
@@ -73,28 +103,28 @@
                 </form>
             </section>
 
-            <section class="mb-8 bg-white rounded-lg shadow-md p-6">
+            <section id="progressSection" class="mb-8 bg-white rounded-lg shadow-md p-6 hidden">
                 <h2 class="text-2xl font-bold mb-4 text-primary">Task Progress</h2>
                 <div id="taskProgress" class="bg-gray-100 p-4 rounded">
                     <p>No active task</p>
                 </div>
             </section>
 
-            <section class="mb-8 bg-white rounded-lg shadow-md p-6">
+            <section id="logsSection" class="mb-8 bg-white rounded-lg shadow-md p-6 hidden">
                 <h2 class="text-2xl font-bold mb-4 text-primary">Sub-Agent Logs</h2>
                 <div id="subAgentLogs" class="bg-gray-100 p-4 rounded h-64 overflow-y-auto">
                     <p>No logs available</p>
                 </div>
             </section>
 
-            <section class="mb-8 bg-white rounded-lg shadow-md p-6">
+            <section id="statsSection" class="mb-8 bg-white rounded-lg shadow-md p-6 hidden">
                 <h2 class="text-2xl font-bold mb-4 text-primary">Statistics</h2>
                 <div id="statistics" class="bg-gray-100 p-4 rounded">
                     <canvas id="statisticsChart"></canvas>
                 </div>
             </section>
 
-            <section class="mb-8 bg-white rounded-lg shadow-md p-6">
+            <section id="artifactsSection" class="mb-8 bg-white rounded-lg shadow-md p-6 hidden">
                 <h2 class="text-2xl font-bold mb-4 text-primary">Artifacts</h2>
                 <div id="artifacts" class="bg-gray-100 p-4 rounded">
                     <ul id="artifactList" class="list-disc pl-5"></ul>
@@ -108,17 +138,69 @@
             const subAgentLogs = document.getElementById('subAgentLogs');
             const statisticsChart = document.getElementById('statisticsChart');
             const artifactList = document.getElementById('artifactList');
+            const authSection = document.getElementById('authSection');
+            const taskSection = document.getElementById('taskSection');
+            const progressSection = document.getElementById('progressSection');
+            const logsSection = document.getElementById('logsSection');
+            const statsSection = document.getElementById('statsSection');
+            const artifactsSection = document.getElementById('artifactsSection');
 
             let chart;
+            let token;
+
+            async function login() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                try {
+                    const response = await axios.post('/api/auth/login', { email, password });
+                    token = response.data.token;
+                    localStorage.setItem('token', token);
+                    showDashboard();
+                } catch (error) {
+                    console.error('Login error:', error);
+                    alert('Login failed. Please try again.');
+                }
+            }
+
+            async function signup() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                try {
+                    const response = await axios.post('/api/auth/register', { email, password });
+                    token = response.data.token;
+                    localStorage.setItem('token', token);
+                    showDashboard();
+                } catch (error) {
+                    console.error('Signup error:', error);
+                    alert('Signup failed. Please try again.');
+                }
+            }
+
+            function showDashboard() {
+                authSection.classList.add('hidden');
+                taskSection.classList.remove('hidden');
+                progressSection.classList.remove('hidden');
+                logsSection.classList.remove('hidden');
+                statsSection.classList.remove('hidden');
+                artifactsSection.classList.remove('hidden');
+                fetchUserInfo();
+                fetchArtifacts();
+            }
 
             taskForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const taskInput = document.getElementById('taskInput').value;
                 try {
-                    const response = await axios.post('/api/execute-tool', {
-                        toolName: 'initiateTask',
-                        params: { taskDescription: taskInput }
-                    });
+                    const response = await axios.post(
+                        '/api/execute-tool',
+                        {
+                            toolName: 'initiateTask',
+                            params: { taskDescription: taskInput }
+                        },
+                        {
+                            headers: { Authorization: `Bearer ${token}` }
+                        }
+                    );
                     updateTaskProgress(response.data.result);
                 } catch (error) {
                     console.error('Error initiating task:', error);
@@ -137,13 +219,15 @@
                 subAgentLogs.scrollTop = subAgentLogs.scrollHeight;
             }
 
-            async function fetchStatistics() {
+            async function fetchUserInfo() {
                 try {
-                    const response = await axios.get('/api/user/info');
+                    const response = await axios.get('/api/user/info', {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
                     const userInfo = response.data;
                     updateStatisticsChart(userInfo);
                 } catch (error) {
-                    console.error('Error fetching statistics:', error);
+                    console.error('Error fetching user info:', error);
                     statisticsChart.innerHTML =
                         '<p class="text-red-600">Error loading statistics</p>';
                 }
@@ -161,7 +245,7 @@
                         datasets: [
                             {
                                 label: 'Task Statistics',
-                                data: [userInfo.totalTasks || 0, userInfo.completedTasks || 0],
+                                data: [userInfo?.totalTasks || 0, userInfo?.completedTasks || 0],
                                 backgroundColor: [
                                     'rgba(246, 98, 186, 0.5)',
                                     'rgba(110, 255, 245, 0.5)'
@@ -183,7 +267,9 @@
 
             async function fetchArtifacts() {
                 try {
-                    const response = await axios.get('/api/artifacts');
+                    const response = await axios.get('/api/artifacts', {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
                     const artifacts = response.data;
                     updateArtifactList(artifacts);
                 } catch (error) {
@@ -202,8 +288,10 @@
                 });
             }
 
-            fetchStatistics();
-            fetchArtifacts();
+            token = localStorage.getItem('token');
+            if (token) {
+                showDashboard();
+            }
 
             const socket = new WebSocket('ws://' + window.location.host);
             socket.onmessage = (event) => {

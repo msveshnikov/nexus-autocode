@@ -33,9 +33,9 @@ export const resetPassword = async (email) => {
 
 export const completePasswordReset = async (token, password) => {
     try {
-        token = jwt.verify(token, process.env.JWT_TOKEN);
-        const user = await User.findOne({ _id: token.userId });
-        if (!token.reset || !user) {
+        const decoded = jwt.verify(token, process.env.JWT_TOKEN);
+        const user = await User.findOne({ _id: decoded.userId });
+        if (!decoded.reset || !user) {
             return { success: false, error: 'Invalid or expired token' };
         }
         const salt = await bcrypt.genSalt(10);
@@ -67,9 +67,8 @@ export const registerUser = async (email, password, credential, req) => {
         let subscriptionStatus = 'none';
         let user;
         if (credential) {
-            const verificationResponse = await verifyGoogleToken(req.body.credential);
+            const verificationResponse = await verifyGoogleToken(credential);
             const profile = verificationResponse?.payload;
-            console.log('email', profile?.email);
             if (verificationResponse.error || !profile) {
                 return { success: false, error: verificationResponse.error };
             }
@@ -154,24 +153,60 @@ export const createOrUpdateUser = async (profile, req, ip, country) => {
         if (user?.profileUrl) {
             delete update.profileUrl;
         }
-        user = await User.findOneAndUpdate({ email: profile.email }, update);
+        user = await User.findOneAndUpdate({ email: profile.email }, update, { new: true });
     }
     return user;
 };
 
 export const verifyToken = (req, res, next) => {
     try {
-        // const token = req.headers.authorization?.split(' ')[1];
-        // if (!token) {
-        //     return res.status(401).json({ error: 'Unauthorized' });
-        // }
-        // const decoded = jwt.verify(token, process.env.JWT_TOKEN);
-        // req.user = {
-        //     id: decoded.userId,
-        //     admin: decoded.admin
-        // };
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const decoded = jwt.verify(token, process.env.JWT_TOKEN);
+        req.user = {
+            id: decoded.userId,
+            admin: decoded.admin
+        };
         next();
     } catch (error) {
         return res.status(403).json({ error: 'Invalid token' });
+    }
+};
+
+export const getUserInfo = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return { success: false, error: 'User not found' };
+        }
+        return {
+            success: true,
+            user: {
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                subscriptionStatus: user.subscriptionStatus,
+                achievements: user.achievements,
+                usageStats: user.usageStats
+            }
+        };
+    } catch (error) {
+        console.error('Get user info error:', error.message);
+        return { success: false, error: 'Failed to retrieve user information' };
+    }
+};
+
+export const updateUserInfo = async (userId, updateData) => {
+    try {
+        const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+        if (!user) {
+            return { success: false, error: 'User not found' };
+        }
+        return { success: true, user };
+    } catch (error) {
+        console.error('Update user info error:', error.message);
+        return { success: false, error: 'Failed to update user information' };
     }
 };

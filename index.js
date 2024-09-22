@@ -230,14 +230,14 @@ app.post('/api/execute-tool', verifyToken, async (req, res) => {
         const result = await handleToolCall(toolName, params, req.user?.id);
         res.json({ result });
     } catch (error) {
-        console.error(error)
+        console.error(error);
         res.status(500).json({ error: 'Error executing tool: ' + error.message });
     }
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'public'));
+app.set('views', path.join(__dirname, 'views'));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));

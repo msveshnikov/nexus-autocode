@@ -151,7 +151,23 @@ https://nexus-autocode.onrender.com/
 
 # TODO
 
--   add user login/signup to app.ejs
--   fix handleToolCall initiateTask { taskDescription: 'Make me rich' }
-Unsupported function call: initiateTask
-POST /api/execute-tool 200 9.099 ms - 2
+
+1. Implement user authentication system (High Priority)
+   - Estimated effort: 13 story points
+   - Tasks:
+     a. Create login functionality
+     b. Create signup functionality
+     c. Integrate with existing app.ejs
+     d. Secure routes and API endpoints
+
+2. Develop RESTful API endpoints for task management (High Priority)
+   - Estimated effort: 8 story points
+   - Tasks:
+     a. Create endpoints for CRUD operations on tasks
+     b. Implement error handling and validation
+
+3. Enhance UI with dynamic EJS forms for task input (High Priority)
+   - Estimated effort: 5 story points
+   - Tasks:
+     a. Create reusable EJS components for task input
+     b. Implement client-side form validation
