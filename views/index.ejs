@@ -43,23 +43,48 @@
             }
         </style>
     </head>
-    <body>
+    <body class="flex flex-col min-h-screen">
         <header class="bg-primary text-white p-4 fixed w-full z-10">
             <div class="container mx-auto flex justify-between items-center">
                 <h1 class="text-3xl font-bold">Nexus</h1>
                 <nav>
                     <ul class="flex space-x-4">
-                        <li><a href="#features" class="hover:text-secondary">Features</a></li>
-                        <li><a href="#design" class="hover:text-secondary">Design</a></li>
-                        <li><a href="/app" class="hover:text-secondary">Dashboard</a></li>
-                        <li><a href="/login" class="hover:text-secondary">Login</a></li>
-                        <li><a href="/register" class="hover:text-secondary">Register</a></li>
+                        <li>
+                            <a href="#features" class="hover:text-secondary transition-colors"
+                                >Features</a
+                            >
+                        </li>
+                        <li>
+                            <a href="#design" class="hover:text-secondary transition-colors"
+                                >Design</a
+                            >
+                        </li>
+                        <li>
+                            <a href="#architecture" class="hover:text-secondary transition-colors"
+                                >Architecture</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/app" class="hover:text-secondary transition-colors"
+                                >Dashboard</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/login" class="hover:text-secondary transition-colors"
+                                >Login</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/register" class="hover:text-secondary transition-colors"
+                                >Register</a
+                            >
+                        </li>
                     </ul>
                 </nav>
             </div>
         </header>
 
-        <main>
+        <main class="flex-grow">
             <section
                 class="hero bg-cover bg-center h-screen flex items-center relative"
                 style="background-image: url('/AI.png')"
@@ -74,16 +99,15 @@
                     <a
                         href="/app"
                         class="bg-secondary text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors"
+                        >Get Started</a
                     >
-                        Get Started
-                    </a>
                 </div>
             </section>
 
             <section id="features" class="py-20 bg-white">
                 <div class="container mx-auto">
                     <h2 class="text-4xl font-bold text-center mb-12 text-primary">Key Features</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Multi-agent Collaboration
@@ -113,11 +137,29 @@
                         </div>
                         <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
+                                Task Decomposition
+                            </h3>
+                            <p>
+                                Break down complex tasks into manageable subtasks for efficient
+                                processing and parallel execution.
+                            </p>
+                        </div>
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Adaptive Learning
                             </h3>
                             <p>
                                 Continuously evolve and refine performance through experience,
                                 feedback, and cutting-edge machine learning techniques.
+                            </p>
+                        </div>
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
+                                Real-time Decision Making
+                            </h3>
+                            <p>
+                                Make informed decisions on-the-fly using real-time data analysis and
+                                predictive modeling.
                             </p>
                         </div>
                     </div>
@@ -130,16 +172,6 @@
                         Design Considerations
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold mb-4 text-primary">Architecture</h3>
-                            <ul class="list-disc pl-5">
-                                <li>Modular design for easy extension</li>
-                                <li>Microservices-based approach</li>
-                                <li>Event-driven communication</li>
-                                <li>Containerization for deployment</li>
-                                <li>NodeJS with ES6 imports and ExpressJS</li>
-                            </ul>
-                        </div>
                         <div class="design-card p-6 bg-white rounded-lg shadow-md">
                             <h3 class="text-xl font-semibold mb-4 text-primary">AI Models</h3>
                             <ul class="list-disc pl-5">
@@ -160,6 +192,18 @@
                                 <li>Version control for configurations</li>
                                 <li>A/B testing for tool performance</li>
                                 <li>Plugin system for new tools</li>
+                            </ul>
+                        </div>
+                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
+                                Security and Privacy
+                            </h3>
+                            <ul class="list-disc pl-5">
+                                <li>Role-based access control</li>
+                                <li>Audit logging for all actions</li>
+                                <li>Compliance with data protection regulations</li>
+                                <li>Secure API key handling</li>
+                                <li>End-to-end encryption</li>
                             </ul>
                         </div>
                     </div>
