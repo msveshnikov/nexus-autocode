@@ -8,11 +8,14 @@
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
             rel="stylesheet"
         />
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+        />
         <style>
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
+            :root {
+                --primary-color: #1a237e;
+                --secondary-color: #6efff5;
             }
             body {
                 font-family: 'Roboto', sans-serif;
@@ -20,271 +23,98 @@
                 color: #333;
                 background: #f0f2f5;
             }
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 0 20px;
+            .bg-primary {
+                background-color: var(--primary-color);
             }
-            header {
-                background: linear-gradient(135deg, #1a237e, #4a148c);
-                color: white;
-                padding: 1rem 0;
-                position: fixed;
-                width: 100%;
-                z-index: 1000;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            .bg-secondary {
+                background-color: var(--secondary-color);
             }
-            nav {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+            .text-primary {
+                color: var(--primary-color);
             }
-            nav ul {
-                list-style: none;
-                display: flex;
+            .text-secondary {
+                color: var(--secondary-color);
             }
-            nav ul li {
-                margin-left: 20px;
+            .border-primary {
+                border-color: var(--primary-color);
             }
-            nav a {
-                color: white;
-                text-decoration: none;
-                font-weight: 500;
-                transition: color 0.3s;
-            }
-            nav a:hover {
-                color: #64ffda;
-            }
-            .hero {
-                text-align: center;
-                padding: 8rem 0 6rem;
-                background: url('/AI.png') no-repeat center center/cover;
-                position: relative;
-                color: white;
-            }
-            .hero::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.6);
-            }
-            .hero-content {
-                position: relative;
-                z-index: 1;
-            }
-            .hero h1 {
-                font-size: 4rem;
-                margin-bottom: 1rem;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            .hero p {
-                font-size: 1.5rem;
-                max-width: 600px;
-                margin: 0 auto 2rem;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-            }
-            .btn {
-                display: inline-block;
-                background: #64ffda;
-                color: #1a237e;
-                padding: 12px 30px;
-                text-decoration: none;
-                border-radius: 50px;
-                font-weight: bold;
-                transition: all 0.3s;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-            .btn:hover {
-                background: #1a237e;
-                color: #64ffda;
-                transform: translateY(-3px);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            }
-            .features {
-                padding: 6rem 0;
-                background: white;
-            }
-            .section-title {
-                text-align: center;
-                font-size: 2.5rem;
-                margin-bottom: 3rem;
-                color: #1a237e;
-            }
-            .feature-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 3rem;
-            }
-            .feature {
-                background: #fff;
-                padding: 2rem;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s;
-            }
-            .feature:hover {
-                transform: translateY(-10px);
-            }
-            .feature h3 {
-                color: #4a148c;
-                margin-bottom: 1rem;
-            }
-            .feature-icon {
-                font-size: 3rem;
-                margin-bottom: 1rem;
-                color: #64ffda;
-            }
-            .design {
-                padding: 6rem 0;
-                background: #f0f2f5;
-            }
-            .design-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 3rem;
-            }
-            .design-card {
-                background: white;
-                padding: 2rem;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            }
-            .design-card h3 {
-                color: #4a148c;
-                margin-bottom: 1rem;
-            }
-            .design-card ul {
-                list-style-type: none;
-                padding-left: 0;
-            }
-            .design-card ul li {
-                margin-bottom: 0.5rem;
-            }
-            .pricing {
-                padding: 6rem 0;
-                background: #f0f2f5;
-            }
-            .pricing-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 3rem;
-            }
-            .price-card {
-                background: white;
-                padding: 3rem 2rem;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-                text-align: center;
-                transition: all 0.3s;
-            }
-            .price-card:hover {
-                transform: scale(1.05);
-            }
-            .price-card h3 {
-                color: #4a148c;
-                font-size: 1.5rem;
-                margin-bottom: 1rem;
-            }
-            .price {
-                font-size: 3rem;
-                font-weight: bold;
-                margin-bottom: 2rem;
-                color: #1a237e;
-            }
-            .price-card ul {
-                list-style: none;
-                margin-bottom: 2rem;
-            }
-            .price-card ul li {
-                margin-bottom: 0.5rem;
-            }
-            footer {
-                background: #1a237e;
-                color: white;
-                text-align: center;
-                padding: 2rem 0;
-            }
-            @media (max-width: 768px) {
-                .hero h1 {
-                    font-size: 3rem;
-                }
-                .hero p {
-                    font-size: 1.2rem;
-                }
-                .feature-grid,
-                .design-grid {
-                    grid-template-columns: 1fr;
-                }
+            .border-secondary {
+                border-color: var(--secondary-color);
             }
         </style>
-        <script
-            src="https://kit.fontawesome.com/your-fontawesome-kit.js"
-            crossorigin="anonymous"
-        ></script>
     </head>
     <body>
-        <header>
-            <div class="container">
+        <header class="bg-primary text-white p-4 fixed w-full z-10">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-3xl font-bold">Nexus</h1>
                 <nav>
-                    <h1>Nexus</h1>
-                    <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#design">Design</a></li>
-                        <li><a href="/app">Dashboard</a></li>
-                        <li><a href="/login">Login</a></li>
-                        <li><a href="/register">Register</a></li>
+                    <ul class="flex space-x-4">
+                        <li><a href="#features" class="hover:text-secondary">Features</a></li>
+                        <li><a href="#design" class="hover:text-secondary">Design</a></li>
+                        <li><a href="/app" class="hover:text-secondary">Dashboard</a></li>
+                        <li><a href="/login" class="hover:text-secondary">Login</a></li>
+                        <li><a href="/register" class="hover:text-secondary">Register</a></li>
                     </ul>
                 </nav>
             </div>
         </header>
 
         <main>
-            <section class="hero">
-                <div class="container hero-content">
-                    <h1>Nexus: Agentic AI Framework</h1>
-                    <p>
+            <section
+                class="hero bg-cover bg-center h-screen flex items-center relative"
+                style="background-image: url('/AI.png')"
+            >
+                <div class="absolute inset-0 bg-black opacity-60"></div>
+                <div class="container mx-auto text-center relative z-1 text-white">
+                    <h1 class="text-5xl font-bold mb-4">Nexus: Agentic AI Framework</h1>
+                    <p class="text-xl mb-8">
                         Revolutionize complex task solving with advanced AI collaboration and
                         seamless tool integration
                     </p>
-                    <a href="/app" class="btn">Get Started</a>
+                    <a
+                        href="/app"
+                        class="bg-secondary text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors"
+                    >
+                        Get Started
+                    </a>
                 </div>
             </section>
 
-            <section id="features" class="features">
-                <div class="container">
-                    <h2 class="section-title">Key Features</h2>
-                    <div class="feature-grid">
-                        <div class="feature">
-                            <i class="fas fa-robot feature-icon"></i>
-                            <h3>Multi-agent Collaboration</h3>
+            <section id="features" class="py-20 bg-white">
+                <div class="container mx-auto">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-primary">Key Features</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
+                                Multi-agent Collaboration
+                            </h3>
                             <p>
                                 Harness the collective intelligence of multiple AI agents working in
                                 harmony to tackle complex challenges.
                             </p>
                         </div>
-                        <div class="feature">
-                            <i class="fas fa-tools feature-icon"></i>
-                            <h3>Dynamic Tool Selection</h3>
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
+                                Dynamic Tool Selection
+                            </h3>
                             <p>
                                 Automatically identify and deploy the most effective tools for each
                                 unique task, optimizing efficiency and results.
                             </p>
                         </div>
-                        <div class="feature">
-                            <i class="fas fa-plug feature-icon"></i>
-                            <h3>External API Integration</h3>
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
+                                External API Integration
+                            </h3>
                             <p>
                                 Seamlessly connect with a wide array of external services and data
                                 sources to enhance capabilities and insights.
                             </p>
                         </div>
-                        <div class="feature">
-                            <i class="fas fa-brain feature-icon"></i>
-                            <h3>Adaptive Learning</h3>
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
+                                Adaptive Learning
+                            </h3>
                             <p>
                                 Continuously evolve and refine performance through experience,
                                 feedback, and cutting-edge machine learning techniques.
@@ -294,13 +124,15 @@
                 </div>
             </section>
 
-            <section id="design" class="design">
-                <div class="container">
-                    <h2 class="section-title">Design Considerations</h2>
-                    <div class="design-grid">
-                        <div class="design-card">
-                            <h3>Architecture</h3>
-                            <ul>
+            <section id="design" class="py-20 bg-gray-100">
+                <div class="container mx-auto">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-primary">
+                        Design Considerations
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">Architecture</h3>
+                            <ul class="list-disc pl-5">
                                 <li>Modular design for easy extension</li>
                                 <li>Microservices-based approach</li>
                                 <li>Event-driven communication</li>
@@ -308,9 +140,9 @@
                                 <li>NodeJS with ES6 imports and ExpressJS</li>
                             </ul>
                         </div>
-                        <div class="design-card">
-                            <h3>AI Models</h3>
-                            <ul>
+                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">AI Models</h3>
+                            <ul class="list-disc pl-5">
                                 <li>Multiple AI provider integration</li>
                                 <li>Model pairing for optimal performance</li>
                                 <li>Meta-learning for quick adaptation</li>
@@ -318,9 +150,11 @@
                                 <li>Fine-tuning for specific tasks</li>
                             </ul>
                         </div>
-                        <div class="design-card">
-                            <h3>Tool Integration</h3>
-                            <ul>
+                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">
+                                Tool Integration
+                            </h3>
+                            <ul class="list-disc pl-5">
                                 <li>Standardized interface for tools</li>
                                 <li>Automatic tool discovery</li>
                                 <li>Version control for configurations</li>
@@ -331,50 +165,10 @@
                     </div>
                 </div>
             </section>
-            <section id="pricing" class="pricing">
-                <div class="container">
-                    <h2 class="section-title">Pricing Plans</h2>
-                    <div class="pricing-grid">
-                        <div class="price-card">
-                            <h3>Basic</h3>
-                            <div class="price">$99/mo</div>
-                            <ul>
-                                <li>5 AI Agents</li>
-                                <li>10 External Connectors</li>
-                                <li>Basic Support</li>
-                                <li>Community Access</li>
-                            </ul>
-                            <a href="#" class="btn">Choose Plan</a>
-                        </div>
-                        <div class="price-card">
-                            <h3>Pro</h3>
-                            <div class="price">$299/mo</div>
-                            <ul>
-                                <li>20 AI Agents</li>
-                                <li>Unlimited External Connectors</li>
-                                <li>Priority Support</li>
-                                <li>Advanced Analytics</li>
-                            </ul>
-                            <a href="#" class="btn">Choose Plan</a>
-                        </div>
-                        <div class="price-card">
-                            <h3>Enterprise</h3>
-                            <div class="price">Custom</div>
-                            <ul>
-                                <li>Unlimited AI Agents</li>
-                                <li>Custom Integrations</li>
-                                <li>24/7 Premium Support</li>
-                                <li>Dedicated Account Manager</li>
-                            </ul>
-                            <a href="#" class="btn">Contact Sales</a>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </main>
 
-        <footer>
-            <div class="container">
+        <footer class="bg-primary text-white py-8">
+            <div class="container mx-auto text-center">
                 <p>&copy; 2024 Nexus. All rights reserved.</p>
             </div>
         </footer>

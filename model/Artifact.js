@@ -1,5 +1,3 @@
-// model/Artifact.js
-
 import mongoose from 'mongoose';
 
 const artifactSchema = new mongoose.Schema(
@@ -31,6 +29,20 @@ const artifactSchema = new mongoose.Schema(
         version: {
             type: Number,
             default: 1
+        },
+        task: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Task'
+        },
+        subTasks: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Task'
+            }
+        ],
+        executorModel: {
+            type: String,
+            enum: ['gemini', 'claude', 'gpt', 'together']
         }
     },
     { timestamps: true }
@@ -63,12 +75,29 @@ artifactSchema.methods.setMetadata = async function (key, value) {
     return this.save();
 };
 
+artifactSchema.methods.addSubTask = async function (subTaskId) {
+    if (!this.subTasks.includes(subTaskId)) {
+        this.subTasks.push(subTaskId);
+        return this.save();
+    }
+    return this;
+};
+
+artifactSchema.methods.setExecutorModel = async function (model) {
+    this.executorModel = model;
+    return this.save();
+};
+
 artifactSchema.statics.findByUserAndType = function (userId, type) {
     return this.find({ user: userId, type: type });
 };
 
 artifactSchema.statics.findByUserAndTags = function (userId, tags) {
     return this.find({ user: userId, tags: { $all: tags } });
+};
+
+artifactSchema.statics.findByTask = function (taskId) {
+    return this.find({ task: taskId });
 };
 
 export const Artifact = mongoose.model('Artifact', artifactSchema);
