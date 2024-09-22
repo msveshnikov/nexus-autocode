@@ -136,7 +136,7 @@ https://nexus-autocode.onrender.com/
 2. Install dependencies: `npm install`
 3. Set up environment variables for API keys and configurations
 4. Run the application: `npm start`
-5. Access the web dashboard at `http://localhost:5000/app`
+5. Access the web dashboard at `http://localhost:3000/app`
 
 ## Development Roadmap
 
@@ -159,5 +159,3 @@ information on how to get involved.
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 # TODO
-
--   improve design, use colors #F662BA and 6EFFF5 and /public/AI.png

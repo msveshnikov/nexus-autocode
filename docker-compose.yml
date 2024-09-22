@@ -6,8 +6,7 @@ services:
             context: .
             dockerfile: Dockerfile
         ports:
-            - '5000:5000'
-            - '6002:6002'
+            - '8004:3000'
         environment:
             - NODE_ENV=production
             - GOOGLE_KEY=${GOOGLE_KEY}
