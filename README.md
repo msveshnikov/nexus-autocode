@@ -151,19 +151,4 @@ https://nexus-autocode.onrender.com/
 
 # TODO
 
-1. Implement user authentication system (High Priority)
-
-    - Estimated effort: 13 story points
-    - Tasks: a. Create login functionality b. Create signup functionality c. Integrate with existing
-      app.ejs d. Secure routes and API endpoints
-
-2. Develop RESTful API endpoints for task management (High Priority)
-
-    - Estimated effort: 8 story points
-    - Tasks: a. Create endpoints for CRUD operations on tasks b. Implement error handling and
-      validation
-
-3. Enhance UI with dynamic EJS forms for task input (High Priority)
-    - Estimated effort: 5 story points
-    - Tasks: a. Create reusable EJS components for task input b. Implement client-side form
-      validation
+-   fix POST /api/auth/register 404 1.119 ms - 34

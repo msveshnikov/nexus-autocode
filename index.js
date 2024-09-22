@@ -6,7 +6,13 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { verifyToken } from './auth.js';
+import {
+    verifyToken,
+    registerUser,
+    authenticateUser,
+    resetPassword,
+    completePasswordReset
+} from './auth.js';
 import { User, addUserCoins, countTokens, storeUsageStats } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
 import { getTextGemini, getTextGeminiFinetune } from './gemini.js';
@@ -235,6 +241,46 @@ app.post('/api/execute-tool', verifyToken, async (req, res) => {
     }
 });
 
+app.post('/api/auth/register', async (req, res) => {
+    const { email, password, credential } = req.body;
+    const result = await registerUser(email, password, credential, req);
+    if (result.success) {
+        res.json({ token: result.token });
+    } else {
+        res.status(400).json({ error: result.error });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+    const result = await authenticateUser(email, password);
+    if (result.success) {
+        res.json({ token: result.token });
+    } else {
+        res.status(401).json({ error: result.error });
+    }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+    const { email } = req.body;
+    const result = await resetPassword(email);
+    if (result.success) {
+        res.json({ message: 'Password reset email sent' });
+    } else {
+        res.status(400).json({ error: result.error });
+    }
+});
+
+app.post('/api/auth/complete-reset', async (req, res) => {
+    const { token, password } = req.body;
+    const result = await completePasswordReset(token, password);
+    if (result.success) {
+        res.json({ message: 'Password reset successful' });
+    } else {
+        res.status(400).json({ error: result.error });
+    }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -245,6 +291,14 @@ app.get('/', (req, res) => {
 
 app.get('/app', (req, res) => {
     res.render('app');
+});
+
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+app.get('/register', (req, res) => {
+    res.render('register');
 });
 
 app.use('/api', (req, res) => {
