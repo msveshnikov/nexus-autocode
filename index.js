@@ -13,12 +13,12 @@ import { getTextGemini, getTextGeminiFinetune } from './gemini.js';
 import { getTextClaude } from './claude.js';
 import { getTextTogether } from './together.js';
 import { getTextGpt } from './openai.js';
-import { fetchPageContent } from './search.js';
 import { getImage } from './image.js';
 import { scheduleAction, stopScheduledAction } from './scheduler.js';
 import { handleToolCall } from './tools.js';
 import http from 'http';
 import { Server } from 'socket.io';
+import { processFile, processUrlContent } from './utils.js';
 
 dotenv.config({ override: true });
 
@@ -43,7 +43,7 @@ const io = new Server(server, {
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '100mb' }));
 app.use(cors({ origin: ALLOWED_ORIGIN }));
-app.use(morgan('combined'));
+app.use(morgan('dev'));
 
 const limiter = rateLimit({
     windowMs: 60 * 1000,
@@ -89,11 +89,8 @@ app.post('/interact', verifyToken, async (req, res) => {
 
         userInput = await processUrlContent(userInput);
 
-        let instructions = '';
-        let GPT;
-
         const contextPrompt = buildContextPrompt(
-            instructions,
+            '',
             chatHistory,
             country,
             lang,
@@ -118,7 +115,6 @@ app.post('/interact', verifyToken, async (req, res) => {
             textResponse,
             imageResponse,
             toolsUsed,
-            gpt: GPT?._id,
             artifact: await Artifact.find({ user: req.user.id }).sort({ updatedAt: -1 }).limit(1)
         });
 
@@ -231,9 +227,10 @@ app.delete('/api/schedule', verifyToken, async (req, res) => {
 app.post('/api/execute-tool', verifyToken, async (req, res) => {
     try {
         const { toolName, params } = req.body;
-        const result = await handleToolCall(toolName, params, req.user.id);
+        const result = await handleToolCall(toolName, params, req.user?.id);
         res.json({ result });
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Error executing tool: ' + error.message });
     }
 });
@@ -273,49 +270,6 @@ io.on('connection', (socket) => {
 server.listen(3000, () => {
     console.log(`🚀 Server started on port 3000`);
 });
-
-async function processFile(fileBytesBase64, fileType, userInput) {
-    const fileBytes = Buffer.from(fileBytesBase64, 'base64');
-    if (fileType === 'pdf') {
-        const pdfParser = (await import('pdf-parse')).default;
-        const data = await pdfParser(fileBytes);
-        return `${data.text}\n\n${userInput}`;
-    } else if (
-        fileType.match(/msword|vnd.openxmlformats-officedocument.wordprocessingml.document/)
-    ) {
-        const mammoth = await import('mammoth');
-        const docResult = await mammoth.extractRawText({ buffer: fileBytes });
-        return `${docResult.value}\n\n${userInput}`;
-    } else if (fileType.match(/xlsx|vnd.openxmlformats-officedocument.spreadsheetml.sheet/)) {
-        const XLSX = await import('xlsx');
-        const workbook = XLSX.read(fileBytes, { type: 'buffer' });
-        const excelText = workbook.SheetNames.map((sheetName) =>
-            XLSX.utils.sheet_to_txt(workbook.Sheets[sheetName])
-        ).join('\n');
-        return `${excelText}\n\n${userInput}`;
-    }
-    return userInput;
-}
-
-async function processUrlContent(userInput) {
-    const urlRegex = /https?:\/\/[^\s]+/;
-    const skipExtensions = ['.mp3', '.mp4', '.wav', '.avi', '.mov'];
-    const match = userInput?.match(urlRegex);
-    if (match) {
-        const url = match[0];
-        const fileExtension = url.split('.').pop().toLowerCase();
-        if (!skipExtensions.includes(`.${fileExtension}`)) {
-            const urlContent = await fetchPageContent(url);
-            if (urlContent) {
-                return userInput.replace(
-                    url,
-                    `\n${urlContent.slice(0, MAX_SEARCH_RESULT_LENGTH)}\n`
-                );
-            }
-        }
-    }
-    return userInput;
-}
 
 function buildContextPrompt(instructions, chatHistory, country, lang, user, userInput, model) {
     const userInfo = [...user.info.entries()].map(([key, value]) => `${key}: ${value}`).join(', ');

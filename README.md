@@ -149,13 +149,9 @@ https://nexus-autocode.onrender.com/
 -   Implement advanced analytics and reporting features
 -   Optimize performance and scalability for production use
 
-## Contributing
-
-We welcome contributions from the community. Please refer to our contributing guidelines for more
-information on how to get involved.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
 # TODO
+
+-   add user login/signup to app.ejs
+-   fix handleToolCall initiateTask { taskDescription: 'Make me rich' }
+Unsupported function call: initiateTask
+POST /api/execute-tool 200 9.099 ms - 2

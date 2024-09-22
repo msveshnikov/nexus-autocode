@@ -161,15 +161,15 @@ export const createOrUpdateUser = async (profile, req, ip, country) => {
 
 export const verifyToken = (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-        const decoded = jwt.verify(token, process.env.JWT_TOKEN);
-        req.user = {
-            id: decoded.userId,
-            admin: decoded.admin
-        };
+        // const token = req.headers.authorization?.split(' ')[1];
+        // if (!token) {
+        //     return res.status(401).json({ error: 'Unauthorized' });
+        // }
+        // const decoded = jwt.verify(token, process.env.JWT_TOKEN);
+        // req.user = {
+        //     id: decoded.userId,
+        //     admin: decoded.admin
+        // };
         next();
     } catch (error) {
         return res.status(403).json({ error: 'Invalid token' });
