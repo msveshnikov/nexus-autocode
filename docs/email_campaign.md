@@ -48,7 +48,7 @@ that make Nexus truly unique:
 These features, combined with our modular architecture and robust security measures, make Nexus the
 ideal choice for organizations looking to harness the full potential of AI.
 
-Ready to see Nexus in action? Check out our demo at https://nexus-autocode.onrender.com/
+Ready to see Nexus in action? Check out our demo at https://nexus.autocode.work/
 
 Best regards, The Nexus Team
 

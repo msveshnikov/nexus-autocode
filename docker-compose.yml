@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
     backend:
-        build:
-            context: .
-            dockerfile: Dockerfile
+        image: extender777/nexus-backend:arm64
         ports:
             - '8004:3000'
         environment:

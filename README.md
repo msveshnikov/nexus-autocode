@@ -7,7 +7,7 @@ capable of solving complex tasks using various tools and external connectors.
 
 # DEMO
 
-https://nexus-autocode.onrender.com/
+https://nexus.autocode.work/
 
 ## Features
 
@@ -151,7 +151,3 @@ https://nexus-autocode.onrender.com/
 
 # TODO
 
--   save to Task, add sub-tasks and schedule executors for tasks
--   add image artifact type generation
--   add model family selector (Gemini, Claude, OpenAI, Together) and use cheap/good model for
-    simple/complex stuff
