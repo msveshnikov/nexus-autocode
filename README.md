@@ -151,4 +151,3 @@ https://nexus-autocode.onrender.com/
 
 # TODO
 
--   fix POST /api/auth/register 404 1.119 ms - 34

@@ -53,7 +53,7 @@
                 transition: color 0.3s;
             }
             nav a:hover {
-                color: #333;
+                color: #64ffda;
             }
             .hero {
                 text-align: center;
@@ -138,6 +138,32 @@
                 margin-bottom: 1rem;
                 color: #64ffda;
             }
+            .design {
+                padding: 6rem 0;
+                background: #f0f2f5;
+            }
+            .design-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 3rem;
+            }
+            .design-card {
+                background: white;
+                padding: 2rem;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            }
+            .design-card h3 {
+                color: #4a148c;
+                margin-bottom: 1rem;
+            }
+            .design-card ul {
+                list-style-type: none;
+                padding-left: 0;
+            }
+            .design-card ul li {
+                margin-bottom: 0.5rem;
+            }
             .pricing {
                 padding: 6rem 0;
                 background: #f0f2f5;
@@ -190,7 +216,7 @@
                     font-size: 1.2rem;
                 }
                 .feature-grid,
-                .pricing-grid {
+                .design-grid {
                     grid-template-columns: 1fr;
                 }
             }
@@ -207,8 +233,10 @@
                     <h1>Nexus</h1>
                     <ul>
                         <li><a href="#features">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#design">Design</a></li>
+                        <li><a href="/app">Dashboard</a></li>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/register">Register</a></li>
                     </ul>
                 </nav>
             </div>
@@ -266,6 +294,43 @@
                 </div>
             </section>
 
+            <section id="design" class="design">
+                <div class="container">
+                    <h2 class="section-title">Design Considerations</h2>
+                    <div class="design-grid">
+                        <div class="design-card">
+                            <h3>Architecture</h3>
+                            <ul>
+                                <li>Modular design for easy extension</li>
+                                <li>Microservices-based approach</li>
+                                <li>Event-driven communication</li>
+                                <li>Containerization for deployment</li>
+                                <li>NodeJS with ES6 imports and ExpressJS</li>
+                            </ul>
+                        </div>
+                        <div class="design-card">
+                            <h3>AI Models</h3>
+                            <ul>
+                                <li>Multiple AI provider integration</li>
+                                <li>Model pairing for optimal performance</li>
+                                <li>Meta-learning for quick adaptation</li>
+                                <li>Federated learning for privacy</li>
+                                <li>Fine-tuning for specific tasks</li>
+                            </ul>
+                        </div>
+                        <div class="design-card">
+                            <h3>Tool Integration</h3>
+                            <ul>
+                                <li>Standardized interface for tools</li>
+                                <li>Automatic tool discovery</li>
+                                <li>Version control for configurations</li>
+                                <li>A/B testing for tool performance</li>
+                                <li>Plugin system for new tools</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
             <section id="pricing" class="pricing">
                 <div class="container">
                     <h2 class="section-title">Pricing Plans</h2>
