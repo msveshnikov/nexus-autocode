@@ -1,0 +1,10 @@
+requests
+beautifulsoup4
+numpy
+pandas
+matplotlib
+fastapi
+pillow
+yfinance
+prettytable
+python-pptx

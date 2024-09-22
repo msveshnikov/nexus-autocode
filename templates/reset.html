@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Reset Password - Nexus AI Framework</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f4f4f4;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 30px;
+                border-radius: 5px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+            }
+            .reset-button {
+                display: inline-block;
+                background-color: #3498db;
+                color: #ffffff;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 5px;
+                margin-top: 20px;
+                font-weight: bold;
+            }
+            .reset-button:hover {
+                background-color: #2980b9;
+            }
+            .footer {
+                margin-top: 30px;
+                font-size: 0.9em;
+                color: #7f8c8d;
+                text-align: center;
+            }
+            .logo {
+                display: block;
+                margin: 0 auto 20px;
+                max-width: 150px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <img src="https://nexus.autocode.work/public/AI.png" alt="Nexus AI Logo" class="logo" />
+            <h1>Reset Your Password</h1>
+            <p>Dear Nexus AI user,</p>
+            <p>
+                We received a request to reset the password for your account. If you didn't make
+                this request, you can safely ignore this email.
+            </p>
+            <p>To reset your password, please click the button below:</p>
+            <a href="{{resetUrl}}" class="reset-button">Reset Password</a>
+            <p>
+                This link will expire in 24 hours for security reasons. If you need to request a new
+                password reset, please visit our website and use the "Forgot Password" option.
+            </p>
+            <p>
+                If you're having trouble clicking the button, you can copy and paste the following
+                URL into your browser:
+            </p>
+            <p>{{resetUrl}}</p>
+            <p>
+                If you have any questions or need assistance, please don't hesitate to contact our
+                support team.
+            </p>
+            <div class="footer">
+                <p>&copy; 2024 Nexus AI Framework. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+</html>
