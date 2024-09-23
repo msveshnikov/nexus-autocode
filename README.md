@@ -71,14 +71,6 @@ https://nexus.autocode.work/
 -   Dependency management for complex workflows
 -   Task templating for common workflows
 
-### Security and Privacy
-
--   Role-based access control
--   Audit logging for all system actions
--   Compliance with data protection regulations (e.g., GDPR, CCPA)
--   Secure handling of API keys and sensitive information
--   End-to-end encryption for data in transit and at rest
-
 ### User Interface
 
 -   Web-based dashboard for system monitoring and control
@@ -101,23 +93,6 @@ https://nexus.autocode.work/
 -   Auto-generated API documentation
 -   RAG-based knowledge retrieval and management
 -   Knowledge base for common issues and best practices
--   Interactive tutorials and onboarding guides
--   Version-controlled documentation
-
-### Extensibility
-
--   Plugin architecture for community-contributed tools and connectors
--   SDK for developing custom agents and workflows
--   Open API for third-party integrations
--   Webhook support for event-driven integrations
-
-### Ethical Considerations
-
--   Bias detection and mitigation in AI models
--   Transparency in decision-making processes
--   Ethical guidelines for AI-driven actions
--   Mechanisms for human oversight and intervention
--   Regular ethical audits and impact assessments
 
 ## Project Structure
 
@@ -141,12 +116,13 @@ https://nexus.autocode.work/
 ## Development Roadmap
 
 -   Implement web dashboard for task initiation and progress tracking
--   Enhance UI with EJS forms for dynamic content
 -   Develop RESTful API endpoints for task management
 -   Implement real-time updates using WebSockets
--   Create user authentication and authorization system
--   Develop plugin ecosystem for community contributions
 -   Implement advanced analytics and reporting features
--   Optimize performance and scalability for production use
 
 # TODO
+
+-   Fix Error initiating task
+-   create scheduling for resoling task (and breaking into subtasks)
+-   auto refresh task logs and artifacts
+-   make logs colorful

@@ -6,6 +6,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import http from 'http';
+import { Server } from 'socket.io';
 import {
     verifyToken,
     registerUser,
@@ -15,15 +17,14 @@ import {
 } from './auth.js';
 import { User, addUserCoins, countTokens, storeUsageStats } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
+import { Task } from './model/Task.js';
 import { getTextGemini, getTextGeminiFinetune } from './gemini.js';
 import { getTextClaude } from './claude.js';
 import { getTextTogether } from './together.js';
 import { getTextGpt } from './openai.js';
 import { getImage } from './image.js';
-import { scheduleAction, stopScheduledAction } from './scheduler.js';
+import { executeTask } from './scheduler.js';
 import { handleToolCall } from './tools.js';
-import http from 'http';
-import { Server } from 'socket.io';
 import { processFile, processUrlContent } from './utils.js';
 
 dotenv.config({ override: true });
@@ -281,6 +282,71 @@ app.post('/api/auth/complete-reset', async (req, res) => {
     }
 });
 
+app.post('/api/tasks', verifyToken, async (req, res) => {
+    try {
+        const { title, description, priority, dueDate } = req.body;
+        const task = new Task({
+            user: req.user.id,
+            title,
+            description,
+            priority,
+            dueDate
+        });
+        await task.save();
+        res.json(task);
+    } catch (error) {
+        res.status(500).json({ error: 'Error creating task: ' + error.message });
+    }
+});
+
+app.get('/api/tasks', verifyToken, async (req, res) => {
+    try {
+        const tasks = await Task.find({ user: req.user.id }).sort({ createdAt: -1 });
+        res.json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching tasks: ' + error.message });
+    }
+});
+
+app.put('/api/tasks/:id', verifyToken, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const task = await Task.findOneAndUpdate(
+            { _id: req.params.id, user: req.user.id },
+            { status },
+            { new: true }
+        );
+        if (!task) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+        res.json(task);
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating task: ' + error.message });
+    }
+});
+
+app.delete('/api/tasks/:id', verifyToken, async (req, res) => {
+    try {
+        const result = await Task.deleteOne({ _id: req.params.id, user: req.user.id });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+        res.json({ message: 'Task deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error deleting task: ' + error.message });
+    }
+});
+
+app.post('/api/tasks/:id/execute', verifyToken, async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        const result = await executeTask(taskId);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error executing task: ' + error.message });
+    }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -332,13 +398,13 @@ function buildContextPrompt(instructions, chatHistory, country, lang, user, user
         ? `System: ${instructions} ${chatHistory
               .map((chat) => `Human: ${chat.user}\nAssistant:${chat.assistant}`)
               .join('\n')}
-            \nHuman: ${userInput}\nAssistant:`.slice(-MAX_CONTEXT_LENGTH)
+          \nHuman: ${userInput}\nAssistant:`.slice(-MAX_CONTEXT_LENGTH)
         : `System: ${instructions || systemPrompt} User country code: ${country} User Lang: ${lang}
-            ${chatHistory
-                .map((chat) => `Human: ${chat.user}\nAssistant:${chat.assistant}`)
-                .join('\n')}
-            \nUser information: ${userInfo}
-            \nHuman: ${userInput || "what's this"}\nAssistant:`.slice(-MAX_CONTEXT_LENGTH);
+          ${chatHistory
+              .map((chat) => `Human: ${chat.user}\nAssistant:${chat.assistant}`)
+              .join('\n')}
+          \nUser information: ${userInfo}
+          \nHuman: ${userInput || "what's this"}\nAssistant:`.slice(-MAX_CONTEXT_LENGTH);
 }
 
 async function getModelResponse(

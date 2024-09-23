@@ -61,7 +61,22 @@ const taskSchema = new mongoose.Schema(
             type: Map,
             of: mongoose.Schema.Types.Mixed
         },
-        executionLogs: [String]
+        executionLogs: [String],
+        model: {
+            type: String,
+            required: true
+        },
+        startTime: Date,
+        endTime: Date,
+        estimatedDuration: Number,
+        actualDuration: Number,
+        cost: Number,
+        dependencies: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Task'
+            }
+        ]
     },
     { timestamps: true }
 );
@@ -76,6 +91,12 @@ taskSchema.methods.addSubTask = function (subTaskData) {
 
 taskSchema.methods.updateStatus = function (newStatus) {
     this.status = newStatus;
+    if (newStatus === 'in_progress' && !this.startTime) {
+        this.startTime = new Date();
+    } else if (newStatus === 'completed' || newStatus === 'failed') {
+        this.endTime = new Date();
+        this.actualDuration = this.endTime - this.startTime;
+    }
     return this.save();
 };
 
@@ -110,6 +131,18 @@ taskSchema.methods.setMetadata = function (key, value) {
     return this.save();
 };
 
+taskSchema.methods.addDependency = function (taskId) {
+    if (!this.dependencies.includes(taskId)) {
+        this.dependencies.push(taskId);
+    }
+    return this.save();
+};
+
+taskSchema.methods.updateCost = function (cost) {
+    this.cost = (this.cost || 0) + cost;
+    return this.save();
+};
+
 taskSchema.statics.findPendingTasks = function (userId) {
     return this.find({ user: userId, status: 'pending' }).sort({ priority: -1, dueDate: 1 });
 };
@@ -123,6 +156,22 @@ taskSchema.statics.findOverdueTasks = function (userId) {
         user: userId,
         dueDate: { $lt: new Date() },
         status: { $in: ['pending', 'in_progress'] }
+    });
+};
+
+taskSchema.statics.findTasksForParallelExecution = function (userId) {
+    return this.find({
+        user: userId,
+        status: 'pending',
+        dependencies: { $size: 0 }
+    }).sort({ priority: -1 });
+};
+
+taskSchema.statics.findCompletedTasksInDateRange = function (userId, startDate, endDate) {
+    return this.find({
+        user: userId,
+        status: 'completed',
+        endTime: { $gte: startDate, $lte: endDate }
     });
 };
 

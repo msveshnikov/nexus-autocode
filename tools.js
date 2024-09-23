@@ -2,7 +2,8 @@ import nodemailer from 'nodemailer';
 import { fetchPageContent, fetchSearchResults, googleNews } from './search.js';
 import { User, addUserCoins } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
-import { scheduleAction, stopScheduledAction } from './scheduler.js';
+import { Task } from './model/Task.js';
+import { executeTask } from './scheduler.js';
 import { MAX_SEARCH_RESULT_LENGTH, toolsUsed } from './index.js';
 import { summarizeYouTubeVideo } from './youtube.js';
 import TelegramBot from 'node-telegram-bot-api';
@@ -264,38 +265,7 @@ export const tools = [
             required: []
         }
     },
-    {
-        name: 'award_achievement',
-        description: 'Award the user with an achievement for any outstanding result.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                emoji: {
-                    type: 'string',
-                    description: 'The emoji to represent the achievement'
-                },
-                description: {
-                    type: 'string',
-                    description: 'A short description of the achievement'
-                }
-            },
-            required: ['emoji', 'description']
-        }
-    },
-    {
-        name: 'send_user_feedback',
-        description: 'Send user feedback to AllChat developers.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                feedback: {
-                    type: 'string',
-                    description: "The user's feedback message"
-                }
-            },
-            required: ['feedback']
-        }
-    },
+
     {
         name: 'save_artifact',
         description:
@@ -357,6 +327,52 @@ export const tools = [
             },
             required: ['taskDescription']
         }
+    },
+    {
+        name: 'create_sub_task',
+        description: 'Create a sub-task for an existing task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                parentTaskId: {
+                    type: 'string',
+                    description: 'The ID of the parent task'
+                },
+                description: {
+                    type: 'string',
+                    description: 'The description of the sub-task'
+                }
+            },
+            required: ['parentTaskId', 'description']
+        }
+    },
+    {
+        name: 'update_task_status',
+        description: 'Update the status of a task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'The ID of the task to update'
+                },
+                status: {
+                    type: 'string',
+                    description: 'The new status of the task',
+                    enum: ['pending', 'in_progress', 'completed', 'failed']
+                }
+            },
+            required: ['taskId', 'status']
+        }
+    },
+    {
+        name: 'get_pending_tasks',
+        description: 'Get all pending tasks for the user.',
+        input_schema: {
+            type: 'object',
+            properties: {},
+            required: []
+        }
     }
 ];
 
@@ -387,8 +403,7 @@ export const handleToolCall = async (name, args, userId) => {
             return persistUserInfo(args.key, args.value, userId);
         case 'remove_user_info':
             return removeUserInfo(userId);
-        case 'schedule_action':
-            return scheduleAction(args.action, args.schedule, userId);
+
         case 'stop_scheduled_action':
             return stopScheduledAction(userId);
         case 'summarize_youtube_video':
@@ -397,7 +412,7 @@ export const handleToolCall = async (name, args, userId) => {
             return addCalendarEvent(
                 args.title,
                 args.description,
-                args.startTime,
+                args.startTime, 
                 args.endTime,
                 userId
             );
@@ -413,6 +428,12 @@ export const handleToolCall = async (name, args, userId) => {
             return generateImage(args.description);
         case 'initiateTask':
             return initiateTask(args.taskDescription, userId);
+        case 'create_sub_task':
+            return createSubTask(args.parentTaskId, args.description);
+        case 'update_task_status':
+            return updateTaskStatus(args.taskId, args.status);
+        case 'get_pending_tasks':
+            return getPendingTasks(userId);
         default:
             throw new Error(`Unsupported function call: ${name}`);
     }
@@ -686,12 +707,55 @@ async function generateImage(description) {
 async function initiateTask(taskDescription, userId) {
     try {
         const user = await User.findById(userId);
+        const task = new Task({
+            user: userId,
+            title: taskDescription,
+            description: taskDescription,
+            status: 'pending'
+        });
+        await task.save();
         user.totalTasks = (user?.totalTasks || 0) + 1;
         await user.save();
+
+        await executeTask(task._id);
 
         return `Task initiated: ${taskDescription}`;
     } catch (error) {
         console.error('Error initiating task:', error);
         return 'Error initiating task: ' + error.message;
+    }
+}
+
+async function createSubTask(parentTaskId, description) {
+    try {
+        const subTask = await Task.findById(parentTaskId).addSubTask({
+            description,
+            status: 'pending'
+        });
+        return `Sub-task created: ${description}`;
+    } catch (error) {
+        console.error('Error creating sub-task:', error);
+        return 'Error creating sub-task: ' + error.message;
+    }
+}
+
+async function updateTaskStatus(taskId, status) {
+    try {
+        const task = await Task.findById(taskId);
+        await task.updateStatus(status);
+        return `Task status updated to: ${status}`;
+    } catch (error) {
+        console.error('Error updating task status:', error);
+        return 'Error updating task status: ' + error.message;
+    }
+}
+
+async function getPendingTasks(userId) {
+    try {
+        const tasks = await Task.findPendingTasks(userId);
+        return tasks.map((task) => `${task.title} (${task.status})`).join('\n');
+    } catch (error) {
+        console.error('Error getting pending tasks:', error);
+        return 'Error getting pending tasks: ' + error.message;
     }
 }

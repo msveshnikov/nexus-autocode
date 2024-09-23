@@ -7,149 +7,84 @@ import { getTextGemini } from './gemini.js';
 import { getTextClaude } from './claude.js';
 import { getTextTogether } from './together.js';
 import { emailSignature } from './email.js';
+import { executePython } from './utils.js';
 
-const scheduledActions = {};
+const scheduledTasks = new Map();
 
-export const scheduleAction = async (action, schedule, userId) => {
-    const user = await User.findById(userId);
-    if (!user) {
-        return 'User not found';
+export const scheduleTask = async (taskId, schedule) => {
+    const task = await Task.findById(taskId).populate('user');
+    if (!task) {
+        throw new Error('Task not found');
     }
 
-    const task = cron.schedule(schedule === 'hourly' ? '0 * * * *' : '0 0 * * *', async () => {
+    const cronJob = cron.schedule(schedule, async () => {
         try {
-            const userInfo = [...user.info.entries()]
-                .map(([key, value]) => `${key}: ${value}`)
-                .join(', ');
-            const prompt = `User information: ${userInfo} Please execute user requested action (do the task, don't request it but do YOURSELF): ${action}`;
-
-            let result;
-            switch (user.preferredModel) {
-                case 'gpt-4':
-                case 'gpt-3.5-turbo':
-                    result = await getTextGpt(
-                        prompt,
-                        0.7,
-                        null,
-                        null,
-                        userId,
-                        user.preferredModel,
-                        true
-                    );
-                    break;
-                case 'gemini-pro':
-                case 'gemini-1.5-pro-001':
-                    result = await getTextGemini(
-                        prompt,
-                        0.7,
-                        null,
-                        null,
-                        userId,
-                        user.preferredModel,
-                        true
-                    );
-                    break;
-                case 'claude-3-opus-20240229':
-                case 'claude-3-sonnet-20240229':
-                    result = await getTextClaude(
-                        prompt,
-                        0.7,
-                        null,
-                        null,
-                        userId,
-                        user.preferredModel,
-                        true
-                    );
-                    break;
-                default:
-                    result = await getTextTogether(prompt, 0.7, userId, user.preferredModel, true);
-            }
-
-            const task = new Task({
-                user: userId,
-                description: action,
-                result,
-                schedule,
-                status: 'completed'
-            });
-            await task.save();
-
-            await sendEmail(
-                user.email,
-                `${schedule} action result`,
-                result + emailSignature,
-                userId
-            );
+            await executeTask(task);
         } catch (error) {
-            console.error(`Error executing scheduled action: ${error}`);
+            console.error(`Error executing scheduled task: ${error}`);
+            task.addExecutionLog(`Scheduled execution failed: ${error.message}`);
+            await task.save();
         }
     });
 
-    scheduledActions[userId] = task;
-    return `Action "${action}" scheduled to run ${schedule}`;
+    scheduledTasks.set(taskId, cronJob);
+    task.metadata.set('schedule', schedule);
+    await task.save();
+    return `Task "${task.title}" scheduled to run ${schedule}`;
 };
 
-export const stopScheduledAction = async (userId) => {
-    const task = scheduledActions[userId];
-    if (task) {
-        task.stop();
-        delete scheduledActions[userId];
-        await Task.updateMany(
-            { user: userId, status: 'scheduled' },
-            { $set: { status: 'cancelled' } }
-        );
-        return 'Scheduled action stopped';
+export const stopScheduledTask = async (taskId) => {
+    const cronJob = scheduledTasks.get(taskId);
+    if (cronJob) {
+        cronJob.stop();
+        scheduledTasks.delete(taskId);
+        const task = await Task.findById(taskId);
+        if (task) {
+            task.metadata.delete('schedule');
+            await task.save();
+        }
+        return 'Scheduled task stopped';
     } else {
-        return 'No scheduled action found for this user';
+        return 'No scheduled task found for this ID';
     }
 };
 
 export const getScheduledTasks = async (userId) => {
-    return Task.find({ user: userId, status: 'scheduled' });
+    return Task.find({ user: userId, 'metadata.schedule': { $exists: true } });
 };
 
-export const getCompletedTasks = async (userId) => {
-    return Task.find({ user: userId, status: 'completed' });
-};
-
-export const createSubTask = async (parentTaskId, description) => {
+export const createSubTask = async (parentTaskId, subTaskData) => {
     const parentTask = await Task.findById(parentTaskId);
     if (!parentTask) {
         throw new Error('Parent task not found');
     }
 
-    const subTask = new Task({
-        user: parentTask.user,
-        description,
-        parentTask: parentTaskId,
-        status: 'pending'
-    });
-
-    await subTask.save();
-    parentTask.subTasks.push(subTask._id);
-    await parentTask.save();
-
+    const subTask = await parentTask.addSubTask(subTaskData);
     return subTask;
 };
 
-export const executeTask = async (taskId) => {
-    const task = await Task.findById(taskId);
-    if (!task) {
-        throw new Error('Task not found');
-    }
+export const executeTask = async (task) => {
+    task.status = 'in_progress';
+    await task.save();
 
-    const user = await User.findById(task.user);
-    if (!user) {
-        throw new Error('User not found');
-    }
+    const userInfo = [...task.user.info.entries()]
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+    const prompt = `User information: ${userInfo}\nTask: ${task.description}\nExecute the task:`;
 
-    const prompt = `Execute the following task: ${task.description}`;
     let result;
-
-    switch (user.preferredModel) {
+    switch (task.user.preferredModel) {
         case 'gpt-4':
         case 'gpt-3.5-turbo':
-            result = await getTextGpt(prompt, 0.7, null, null, user._id, user.preferredModel, true);
+            result = await getTextGpt(
+                prompt,
+                0.7,
+                null,
+                null,
+                task.user._id,
+                task.user.preferredModel,
+                true
+            );
             break;
         case 'gemini-pro':
         case 'gemini-1.5-pro-001':
@@ -158,8 +93,8 @@ export const executeTask = async (taskId) => {
                 0.7,
                 null,
                 null,
-                user._id,
-                user.preferredModel,
+                task.user._id,
+                task.user.preferredModel,
                 true
             );
             break;
@@ -170,18 +105,57 @@ export const executeTask = async (taskId) => {
                 0.7,
                 null,
                 null,
-                user._id,
-                user.preferredModel,
+                task.user._id,
+                task.user.preferredModel,
                 true
             );
             break;
         default:
-            result = await getTextTogether(prompt, 0.7, user._id, user.preferredModel, true);
+            result = await getTextTogether(
+                prompt,
+                0.7,
+                task.user._id,
+                task.user.preferredModel,
+                true
+            );
     }
 
-    task.result = result;
+    task.addExecutionLog(result);
+
+    if (task.tools.includes('python')) {
+        const pythonResult = await executePython(result);
+        task.addExecutionLog(`Python execution result: ${pythonResult}`);
+    }
+
     task.status = 'completed';
     await task.save();
 
+    await sendEmail(
+        task.user.email,
+        `Task Result: ${task.title}`,
+        `Task: ${task.description}\n\nResult: ${result}${emailSignature}`,
+        task.user._id
+    );
+
     return result;
+};
+
+export const processTaskQueue = async () => {
+    const pendingTasks = await Task.findPendingTasks();
+    for (const task of pendingTasks) {
+        try {
+            await executeTask(task);
+        } catch (error) {
+            console.error(`Error processing task ${task._id}: ${error}`);
+            task.status = 'failed';
+            task.addExecutionLog(`Execution failed: ${error.message}`);
+            await task.save();
+        }
+    }
+};
+
+export const initializeScheduler = () => {
+    cron.schedule('*/5 * * * *', async () => {
+        await processTaskQueue();
+    });
 };

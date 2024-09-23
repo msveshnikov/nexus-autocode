@@ -10,6 +10,7 @@
         />
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/socket.io-client/dist/socket.io.min.js"></script>
         <style>
             :root {
                 --primary-color: #1a237e;
@@ -36,6 +37,18 @@
             }
             .border-secondary {
                 border-color: var(--secondary-color);
+            }
+            .log-info {
+                color: #4a90e2;
+            }
+            .log-warning {
+                color: #f39c12;
+            }
+            .log-error {
+                color: #e74c3c;
+            }
+            .log-success {
+                color: #2ecc71;
             }
         </style>
     </head>
@@ -104,7 +117,7 @@
                             <option value="gpt-4">GPT-4</option>
                             <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                             <option value="gemini-pro">Gemini Pro</option>
-                            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                            <option value="claude-3-sonnet-20240229">Claude 3 sonnet</option>
                             <option value="together-ai-model">Together AI Model</option>
                         </select>
                     </div>
@@ -133,9 +146,7 @@
 
             <section id="logsSection" class="mb-8 bg-white rounded-lg shadow-md p-6 hidden">
                 <h2 class="text-2xl font-bold mb-4 text-primary">Sub-Agent Logs</h2>
-                <div id="subAgentLogs" class="bg-gray-100 p-4 rounded h-64 overflow-y-auto">
-                    <p>No logs available</p>
-                </div>
+                <div id="subAgentLogs" class="bg-gray-100 p-4 rounded h-64 overflow-y-auto"></div>
             </section>
 
             <section id="statsSection" class="mb-8 bg-white rounded-lg shadow-md p-6 hidden">
@@ -170,6 +181,7 @@
 
             let chart;
             let token;
+            let socket;
 
             async function login() {
                 const email = document.getElementById('email').value;
@@ -209,6 +221,16 @@
                 artifactsSection.classList.remove('hidden');
                 fetchUserInfo();
                 fetchArtifacts();
+                initializeSocket();
+            }
+
+            function initializeSocket() {
+                socket = io();
+                socket.on('taskProgressUpdate', updateTaskProgress);
+                socket.on('subAgentLogUpdate', addSubAgentLog);
+                socket.on('subTasksUpdate', updateSubTasks);
+                socket.on('statisticsUpdate', updateStatisticsChart);
+                socket.on('artifactUpdate', fetchArtifacts);
             }
 
             taskForm.addEventListener('submit', async (e) => {
@@ -227,7 +249,6 @@
                         }
                     );
                     updateTaskProgress(response.data.result);
-                    updateSubTasks(response.data.subTasks);
                 } catch (error) {
                     console.error('Error initiating task:', error);
                     taskProgress.innerHTML = '<p class="text-red-600">Error initiating task</p>';
@@ -250,6 +271,15 @@
             function addSubAgentLog(log) {
                 const logElement = document.createElement('p');
                 logElement.textContent = log;
+                if (log.includes('INFO')) {
+                    logElement.classList.add('log-info');
+                } else if (log.includes('WARNING')) {
+                    logElement.classList.add('log-warning');
+                } else if (log.includes('ERROR')) {
+                    logElement.classList.add('log-error');
+                } else if (log.includes('SUCCESS')) {
+                    logElement.classList.add('log-success');
+                }
                 subAgentLogs.appendChild(logElement);
                 subAgentLogs.scrollTop = subAgentLogs.scrollHeight;
             }
@@ -328,21 +358,10 @@
                 showDashboard();
             }
 
-            const socket = new WebSocket('ws://' + window.location.host);
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'subAgentLog') {
-                    addSubAgentLog(data.log);
-                } else if (data.type === 'taskProgress') {
-                    updateTaskProgress(data.progress);
-                } else if (data.type === 'subTasksUpdate') {
-                    updateSubTasks(data.subTasks);
-                } else if (data.type === 'statisticsUpdate') {
-                    updateStatisticsChart(data.userInfo);
-                } else if (data.type === 'artifactUpdate') {
-                    fetchArtifacts();
-                }
-            };
+            setInterval(() => {
+                fetchUserInfo();
+                fetchArtifacts();
+            }, 30000);
         </script>
     </body>
 </html>
