@@ -1,5 +1,4 @@
 import cron from 'node-cron';
-import { User } from './model/User.js';
 import { Task } from './model/Task.js';
 import { sendEmail } from './tools.js';
 import { getTextGpt } from './openai.js';

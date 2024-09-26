@@ -122,7 +122,7 @@ https://nexus.autocode.work/
 
 # TODO
 
--   Fix Error initiating task
 -   create scheduling for resoling task (and breaking into subtasks)
+-   after initiation task should be in queue for execution
 -   auto refresh task logs and artifacts
 -   make logs colorful

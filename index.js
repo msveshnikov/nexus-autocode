@@ -212,25 +212,6 @@ app.put('/api/user/info', verifyToken, async (req, res) => {
     }
 });
 
-app.post('/api/schedule', verifyToken, async (req, res) => {
-    try {
-        const { action, schedule } = req.body;
-        const result = await scheduleAction(action, schedule, req.user.id);
-        res.json({ message: result });
-    } catch (error) {
-        res.status(500).json({ error: 'Error scheduling action: ' + error.message });
-    }
-});
-
-app.delete('/api/schedule', verifyToken, async (req, res) => {
-    try {
-        const result = await stopScheduledAction(req.user.id);
-        res.json({ message: result });
-    } catch (error) {
-        res.status(500).json({ error: 'Error stopping scheduled action: ' + error.message });
-    }
-});
-
 app.post('/api/execute-tool', verifyToken, async (req, res) => {
     try {
         const { toolName, params } = req.body;
@@ -284,13 +265,14 @@ app.post('/api/auth/complete-reset', async (req, res) => {
 
 app.post('/api/tasks', verifyToken, async (req, res) => {
     try {
-        const { title, description, priority, dueDate } = req.body;
+        const { title, description, priority, dueDate, model } = req.body;
         const task = new Task({
             user: req.user.id,
             title,
             description,
             priority,
-            dueDate
+            dueDate,
+            model
         });
         await task.save();
         res.json(task);

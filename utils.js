@@ -320,7 +320,8 @@ export async function initiateTask(taskDescription, userId) {
             user: userId,
             title: taskDescription,
             description: taskDescription,
-            status: 'pending'
+            status: 'pending',
+            model: 'gpt-3.5-turbo'
         });
         await task.save();
 
@@ -337,8 +338,7 @@ export async function updateTaskStatus(taskId, newStatus) {
         if (!task) {
             throw new Error('Task not found');
         }
-        task.status = newStatus;
-        await task.save();
+        await task.updateStatus(newStatus);
         return `Task status updated to ${newStatus}`;
     } catch (error) {
         console.error('Error updating task status:', error);
@@ -456,6 +456,24 @@ export async function findOverdueTasks(userId) {
         return await Task.findOverdueTasks(userId);
     } catch (error) {
         console.error('Error finding overdue tasks:', error);
+        throw error;
+    }
+}
+
+export async function findTasksForParallelExecution(userId) {
+    try {
+        return await Task.findTasksForParallelExecution(userId);
+    } catch (error) {
+        console.error('Error finding tasks for parallel execution:', error);
+        throw error;
+    }
+}
+
+export async function findCompletedTasksInDateRange(userId, startDate, endDate) {
+    try {
+        return await Task.findCompletedTasksInDateRange(userId, startDate, endDate);
+    } catch (error) {
+        console.error('Error finding completed tasks in date range:', error);
         throw error;
     }
 }

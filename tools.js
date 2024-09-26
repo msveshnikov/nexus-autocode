@@ -1,17 +1,24 @@
 import nodemailer from 'nodemailer';
 import { fetchPageContent, fetchSearchResults, googleNews } from './search.js';
-import { User, addUserCoins } from './model/User.js';
+import { User } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
-import { Task } from './model/Task.js';
-import { executeTask } from './scheduler.js';
 import { MAX_SEARCH_RESULT_LENGTH, toolsUsed } from './index.js';
 import { summarizeYouTubeVideo } from './youtube.js';
 import TelegramBot from 'node-telegram-bot-api';
-import ical from 'ical-generator';
 import { emailSignature } from './email.js';
-import { getImage } from './image.js';
-import { executePython } from './utils.js';
-import axios from 'axios';
+import {
+    executePython,
+    getStockPrice,
+    getFxRate,
+    addCalendarEvent,
+    getUserSubscriptionInfo,
+    saveArtifact,
+    generateImage,
+    initiateTask,
+    updateTaskStatus,
+    addSubTask,
+    findPendingTasks
+} from './utils.js';
 
 const bot = new TelegramBot(process.env.TELEGRAM_KEY);
 const transporter = nodemailer.createTransport({
@@ -265,7 +272,6 @@ export const tools = [
             required: []
         }
     },
-
     {
         name: 'save_artifact',
         description:
@@ -323,9 +329,13 @@ export const tools = [
                 taskDescription: {
                     type: 'string',
                     description: 'The description of the task to initiate'
+                },
+                model: {
+                    type: 'string',
+                    description: 'The AI model to use for the task'
                 }
             },
-            required: ['taskDescription']
+            required: ['taskDescription', 'model']
         }
     },
     {
@@ -381,8 +391,6 @@ export const handleToolCall = async (name, args, userId) => {
     console.log('handleToolCall', name, args);
 
     switch (name) {
-        case 'get_weather':
-            return getWeather(args.location);
         case 'get_stock_price':
             return getStockPrice(args.ticker);
         case 'get_fx_rate':
@@ -403,7 +411,8 @@ export const handleToolCall = async (name, args, userId) => {
             return persistUserInfo(args.key, args.value, userId);
         case 'remove_user_info':
             return removeUserInfo(userId);
-
+        case 'schedule_action':
+            return scheduleAction(args.action, args.schedule, userId);
         case 'stop_scheduled_action':
             return stopScheduledAction(userId);
         case 'summarize_youtube_video':
@@ -412,24 +421,20 @@ export const handleToolCall = async (name, args, userId) => {
             return addCalendarEvent(
                 args.title,
                 args.description,
-                args.startTime, 
+                args.startTime,
                 args.endTime,
                 userId
             );
         case 'get_user_subscription_info':
             return getUserSubscriptionInfo(userId);
-        case 'award_achievement':
-            return awardAchievement(args.emoji, args.description, userId);
-        case 'send_user_feedback':
-            return sendUserFeedback(args.feedback);
         case 'save_artifact':
             return saveArtifact(args.artifactName, args.content, args.type, userId);
         case 'generate_image':
             return generateImage(args.description);
         case 'initiateTask':
-            return initiateTask(args.taskDescription, userId);
+            return initiateTask(args.taskDescription, userId, args.model);
         case 'create_sub_task':
-            return createSubTask(args.parentTaskId, args.description);
+            return addSubTask(args.parentTaskId, args.description);
         case 'update_task_status':
             return updateTaskStatus(args.taskId, args.status);
         case 'get_pending_tasks':
@@ -438,69 +443,6 @@ export const handleToolCall = async (name, args, userId) => {
             throw new Error(`Unsupported function call: ${name}`);
     }
 };
-
-async function getWeather(location) {
-    try {
-        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${process.env.OPENWEATHER_API_KEY}`;
-        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${process.env.OPENWEATHER_API_KEY}`;
-        const [weatherResponse, forecastResponse] = await Promise.all([
-            axios.get(weatherUrl),
-            axios.get(forecastUrl)
-        ]);
-        const [weatherData, forecastData] = [weatherResponse.data, forecastResponse.data];
-        const { name, weather, main } = weatherData;
-        const { list } = forecastData;
-
-        const currentWeather = `In ${name}, the weather is ${
-            weather?.[0]?.description
-        } with a temperature of ${Math.round(main?.temp - 273.15)}°C`;
-
-        const fiveDayForecast = list
-            ?.filter((item) => item.dt_txt.includes('12:00:00'))
-            ?.slice(0, 5)
-            ?.map((item) => {
-                const date = new Date(item.dt * 1000).toLocaleDateString();
-                const temperature = Math.round(item.main.temp - 273.15);
-                const description = item.weather[0].description;
-                return `On ${date}, the weather will be ${description} with a temperature of ${temperature}°C`;
-            })
-            ?.join('\n');
-
-        return `${currentWeather}\n\nFive-day forecast:\n${fiveDayForecast}`;
-    } catch (error) {
-        console.error('Error fetching weather:', error);
-        return 'Error fetching weather: ' + error.message;
-    }
-}
-
-async function getStockPrice(ticker) {
-    try {
-        const apiUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${process.env.ALPHAVANTAGE_API_KEY}`;
-        const response = await axios.get(apiUrl);
-        const data = response.data;
-        const timeSeries = data['Time Series (Daily)'];
-        const lastWeekPrices = Object.entries(timeSeries)
-            .slice(0, 7)
-            .map(([date, values]) => `${date}: $${values['4. close']}`);
-        return `Last week's stock prices for ${ticker}:\n${lastWeekPrices.join('\n')}`;
-    } catch (error) {
-        console.error('Error fetching stock price:', error);
-        return 'Error fetching stock price: ' + error.message;
-    }
-}
-
-async function getFxRate(baseCurrency, quoteCurrency) {
-    try {
-        const apiUrl = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${baseCurrency}&to_currency=${quoteCurrency}&apikey=${process.env.ALPHAVANTAGE_API_KEY}`;
-        const response = await axios.get(apiUrl);
-        const data = response.data;
-        const exchangeRate = data['Realtime Currency Exchange Rate']['5. Exchange Rate'];
-        return `Current exchange rate for ${baseCurrency}/${quoteCurrency}: ${exchangeRate}`;
-    } catch (error) {
-        console.error('Error fetching FX rates:', error);
-        return 'Error fetching FX rates: ' + error.message;
-    }
-}
 
 async function sendTelegramMessage(chatId, message) {
     try {
@@ -580,179 +522,33 @@ async function removeUserInfo(userId) {
     }
 }
 
-async function addCalendarEvent(title, description, startTime, endTime, userId) {
+async function scheduleAction(action, schedule, userId) {
     try {
         const user = await User.findById(userId);
-        const cal = ical({ domain: 'allchat.online' });
-        cal.createEvent({
-            start: new Date(startTime),
-            end: new Date(endTime),
-            summary: title,
-            description
-        });
-
-        const icsContent = cal.toString();
-        const subject = `Calendar Event: ${title}`;
-        const emailContent = `Please find the attached ICS file for the event: ${title}`;
-        const attachmentName = `${title}.ics`;
-        const attachments = [
-            {
-                filename: attachmentName,
-                content: icsContent,
-                contentType: 'text/calendar'
-            }
-        ];
-
-        await sendEmail(user.email, subject, emailContent + emailSignature, userId, attachments);
-        return `Calendar event '${title}' added successfully and ICS file sent to ${user.email}.`;
-    } catch (error) {
-        console.error('Error adding calendar event:', error);
-        return 'Error adding calendar event: ' + error.message;
-    }
-}
-
-async function getUserSubscriptionInfo(userId) {
-    try {
-        const user = await User.findById(userId);
-        const { subscriptionStatus, subscriptionId, usageStats, info } = user;
-
-        let output = `Subscription Status: ${subscriptionStatus}\n`;
-        output += `Subscription ID: ${subscriptionId || 'N/A'}\n\n`;
-
-        output += 'Usage Statistics:\n';
-        for (const [model, stats] of Object.entries(usageStats)) {
-            output += `${model}:\n`;
-            output += `  Input Tokens: ${stats.inputTokens}\n`;
-            output += `  Output Tokens: ${stats.outputTokens}\n`;
-            output += `  Money Consumed: $${stats.moneyConsumed.toFixed(2)}\n`;
-            if (model === 'gemini') {
-                output += `  Images Generated: ${stats.imagesGenerated}\n`;
-            }
-            output += '\n';
-        }
-
-        output += 'User Information:\n';
-        for (const [key, value] of info.entries()) {
-            output += `${key}: ${value}\n`;
-        }
-
-        return output;
-    } catch (error) {
-        console.error('Error getting user subscription information:', error);
-        return 'Error getting user subscription information: ' + error.message;
-    }
-}
-
-async function awardAchievement(emoji, description, userId) {
-    try {
-        const user = await User.findById(userId);
-        emoji = emoji?.slice(0, 2);
-        const achievement = { emoji, description };
-        user.achievements.push(achievement);
+        user.scheduledAction = { action, schedule };
         await user.save();
-        addUserCoins(userId, 30);
-        return `Achievement awarded: ${emoji} ${description}`;
+        return `Action scheduled successfully: ${action} (${schedule})`;
     } catch (error) {
-        console.error('Error awarding achievement:', error);
-        return 'Error awarding achievement: ' + error.message;
+        console.error('Error scheduling action:', error);
+        return 'Error scheduling action: ' + error.message;
     }
 }
 
-async function sendUserFeedback(feedback) {
-    const developerChatId = '1049277315';
-    try {
-        await bot.sendMessage(developerChatId, `User Feedback: ${feedback}`);
-        return 'Feedback sent successfully to AllChat developers.';
-    } catch (error) {
-        console.error('Error sending user feedback:', error);
-        return 'Error sending user feedback: ' + error.message;
-    }
-}
-
-async function saveArtifact(artifactName, content, type, userId) {
-    try {
-        let artifact = await Artifact.findOne({ user: userId, name: artifactName });
-
-        if (artifact) {
-            artifact.content = content;
-            artifact.type = type;
-            artifact.updatedAt = new Date();
-        } else {
-            artifact = new Artifact({
-                user: userId,
-                name: artifactName,
-                content,
-                type
-            });
-        }
-
-        await artifact.save();
-        return `Artifact "${artifactName}" of type "${type}" saved successfully.`;
-    } catch (error) {
-        console.error('Error saving artifact:', error);
-        return 'Error saving artifact: ' + error.message;
-    }
-}
-
-async function generateImage(description) {
-    try {
-        const imageUrl = await getImage(description);
-        return `Image generated successfully. URL: ${imageUrl}`;
-    } catch (error) {
-        console.error('Error generating image:', error);
-        return 'Error generating image: ' + error.message;
-    }
-}
-
-async function initiateTask(taskDescription, userId) {
+async function stopScheduledAction(userId) {
     try {
         const user = await User.findById(userId);
-        const task = new Task({
-            user: userId,
-            title: taskDescription,
-            description: taskDescription,
-            status: 'pending'
-        });
-        await task.save();
-        user.totalTasks = (user?.totalTasks || 0) + 1;
+        user.scheduledAction = null;
         await user.save();
-
-        await executeTask(task._id);
-
-        return `Task initiated: ${taskDescription}`;
+        return 'Scheduled action stopped and removed successfully.';
     } catch (error) {
-        console.error('Error initiating task:', error);
-        return 'Error initiating task: ' + error.message;
-    }
-}
-
-async function createSubTask(parentTaskId, description) {
-    try {
-        const subTask = await Task.findById(parentTaskId).addSubTask({
-            description,
-            status: 'pending'
-        });
-        return `Sub-task created: ${description}`;
-    } catch (error) {
-        console.error('Error creating sub-task:', error);
-        return 'Error creating sub-task: ' + error.message;
-    }
-}
-
-async function updateTaskStatus(taskId, status) {
-    try {
-        const task = await Task.findById(taskId);
-        await task.updateStatus(status);
-        return `Task status updated to: ${status}`;
-    } catch (error) {
-        console.error('Error updating task status:', error);
-        return 'Error updating task status: ' + error.message;
+        console.error('Error stopping scheduled action:', error);
+        return 'Error stopping scheduled action: ' + error.message;
     }
 }
 
 async function getPendingTasks(userId) {
     try {
-        const tasks = await Task.findPendingTasks(userId);
+        const tasks = await findPendingTasks(userId);
         return tasks.map((task) => `${task.title} (${task.status})`).join('\n');
     } catch (error) {
         console.error('Error getting pending tasks:', error);
