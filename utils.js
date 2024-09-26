@@ -143,40 +143,6 @@ export async function executePython(code) {
     }
 }
 
-export async function getWeather(location) {
-    try {
-        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${process.env.OPENWEATHER_API_KEY}`;
-        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${process.env.OPENWEATHER_API_KEY}`;
-        const [weatherResponse, forecastResponse] = await Promise.all([
-            axios.get(weatherUrl),
-            axios.get(forecastUrl)
-        ]);
-        const [weatherData, forecastData] = [weatherResponse.data, forecastResponse.data];
-        const { name, weather, main } = weatherData;
-        const { list } = forecastData;
-
-        const currentWeather = `In ${name}, the weather is ${
-            weather?.[0]?.description
-        } with a temperature of ${Math.round(main?.temp - 273.15)}°C`;
-
-        const fiveDayForecast = list
-            ?.filter((item) => item.dt_txt.includes('12:00:00'))
-            ?.slice(0, 5)
-            ?.map((item) => {
-                const date = new Date(item.dt * 1000).toLocaleDateString();
-                const temperature = Math.round(item.main.temp - 273.15);
-                const description = item.weather[0].description;
-                return `On ${date}, the weather will be ${description} with a temperature of ${temperature}°C`;
-            })
-            ?.join('\n');
-
-        return `${currentWeather}\n\nFive-day forecast:\n${fiveDayForecast}`;
-    } catch (error) {
-        console.error('Error fetching weather:', error);
-        throw error;
-    }
-}
-
 export async function getStockPrice(ticker) {
     try {
         const apiUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${process.env.ALPHAVANTAGE_API_KEY}`;

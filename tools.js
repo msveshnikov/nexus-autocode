@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 import { fetchPageContent, fetchSearchResults, googleNews } from './search.js';
 import { User } from './model/User.js';
-import { Artifact } from './model/Artifact.js';
 import { MAX_SEARCH_RESULT_LENGTH, toolsUsed } from './index.js';
 import { summarizeYouTubeVideo } from './youtube.js';
 import TelegramBot from 'node-telegram-bot-api';
@@ -10,15 +9,12 @@ import {
     executePython,
     getStockPrice,
     getFxRate,
-    addCalendarEvent,
-    getUserSubscriptionInfo,
     saveArtifact,
     generateImage,
     initiateTask,
     updateTaskStatus,
     addSubTask,
     findPendingTasks,
-    getWeather,
     assignAgentToTask,
     addToolToTask,
     addArtifactToTask,
@@ -41,20 +37,6 @@ const transporter = nodemailer.createTransport({
 });
 
 export const tools = [
-    {
-        name: 'get_weather',
-        description: 'Get the current weather and forecast in a given location.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                location: {
-                    type: 'string',
-                    description: 'The city and state/country, e.g. San Francisco, CA'
-                }
-            },
-            required: ['location']
-        }
-    },
     {
         name: 'get_stock_price',
         description: "Retrieves the last week's stock price for a given ticker symbol.",
@@ -179,33 +161,7 @@ export const tools = [
             required: ['lang']
         }
     },
-    {
-        name: 'persist_user_info',
-        description: 'Persist user information in the database.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                key: {
-                    type: 'string',
-                    description: 'The key for the user information'
-                },
-                value: {
-                    type: 'string',
-                    description: 'The value for the user information'
-                }
-            },
-            required: ['key', 'value']
-        }
-    },
-    {
-        name: 'remove_user_info',
-        description: 'Removes all information about user.',
-        input_schema: {
-            type: 'object',
-            properties: {},
-            required: []
-        }
-    },
+
     {
         name: 'schedule_task',
         description: 'Schedule a task for execution.',
@@ -261,42 +217,7 @@ export const tools = [
             required: ['videoId']
         }
     },
-    {
-        name: 'add_calendar_event',
-        description: "Adds an event to the user's calendar and sends an ICS file via email.",
-        input_schema: {
-            type: 'object',
-            properties: {
-                title: {
-                    type: 'string',
-                    description: 'The title of the calendar event'
-                },
-                description: {
-                    type: 'string',
-                    description: 'The description of the calendar event'
-                },
-                startTime: {
-                    type: 'string',
-                    description: 'The start time of the event in ISO format'
-                },
-                endTime: {
-                    type: 'string',
-                    description: 'The end time of the event in ISO format'
-                }
-            },
-            required: ['title', 'description', 'startTime', 'endTime']
-        }
-    },
-    {
-        name: 'get_user_subscription_info',
-        description:
-            "Get information about the user's subscription status, usage statistics, and API consumption.",
-        input_schema: {
-            type: 'object',
-            properties: {},
-            required: []
-        }
-    },
+
     {
         name: 'save_artifact',
         description:
@@ -576,10 +497,7 @@ export const handleToolCall = async (name, args, userId) => {
             return executePython(args.code);
         case 'get_latest_news':
             return getLatestNews(args.lang);
-        case 'persist_user_info':
-            return persistUserInfo(args.key, args.value, userId);
-        case 'remove_user_info':
-            return removeUserInfo(userId);
+
         case 'schedule_task':
             return scheduleTask(args.taskId, args.schedule);
         case 'stop_scheduled_task':
@@ -588,10 +506,7 @@ export const handleToolCall = async (name, args, userId) => {
             return getScheduledTasks(userId);
         case 'summarize_youtube_video':
             return summarizeYouTubeVideo(args.videoId);
-        case 'add_calendar_event':
-            return addCalendarEvent(args.title, args.description, args.startTime, args.endTime, userId);
-        case 'get_user_subscription_info':
-            return getUserSubscriptionInfo(userId);
+
         case 'save_artifact':
             return saveArtifact(args.artifactName, args.content, args.type, userId);
         case 'generate_image':
@@ -621,7 +536,11 @@ export const handleToolCall = async (name, args, userId) => {
         case 'find_tasks_for_parallel_execution':
             return findTasksForParallelExecution(userId);
         case 'find_completed_tasks_in_date_range':
-            return findCompletedTasksInDateRange(userId, new Date(args.startDate), new Date(args.endDate));
+            return findCompletedTasksInDateRange(
+                userId,
+                new Date(args.startDate),
+                new Date(args.endDate)
+            );
         default:
             throw new Error(`Unsupported function call: ${name}`);
     }
@@ -678,29 +597,4 @@ async function searchWebContent(query) {
         })
     );
     return pageContents?.join('\n').slice(0, MAX_SEARCH_RESULT_LENGTH * 2);
-}
-
-async function persistUserInfo(key, value, userId) {
-    try {
-        let user = await User.findById(userId);
-        user.info.set(key, value);
-        await user.save();
-        return `User information ${key}: ${value} persisted successfully.`;
-    } catch (error) {
-        console.error('Error persisting user information:', error);
-        return 'Error persisting user information: ' + error.message;
-    }
-}
-
-async function removeUserInfo(userId) {
-    try {
-        const user = await User.findById(userId);
-        user.info = new Map();
-        await user.save();
-        await Artifact.deleteMany({ user: userId });
-        return `User information and all associated artifacts removed successfully for user ${userId}.`;
-    } catch (error) {
-        console.error('Error removing user information and artifacts:', error);
-        return 'Error removing user information and artifacts: ' + error.message;
-    }
 }

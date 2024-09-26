@@ -12,7 +12,6 @@ import {
     addCalendarEvent,
     generateImage,
     findPendingTasks,
-    findTasksByPriority,
     findOverdueTasks,
     findTasksForParallelExecution,
     findCompletedTasksInDateRange

@@ -50,7 +50,6 @@ This function dispatches tool calls to their respective implementations based on
 
 The file contains implementations for various tools, including:
 
-1. `getWeather`: Fetches weather data for a given location
 2. `getStockPrice`: Retrieves stock price information
 3. `getFxRate`: Gets foreign exchange rates
 4. `sendTelegramMessage`: Sends a message via Telegram
@@ -72,10 +71,6 @@ The file contains implementations for various tools, including:
 
 ```javascript
 import { handleToolCall } from './tools.js';
-
-// Example: Get weather information
-const weatherResult = await handleToolCall('get_weather', { location: 'New York, NY' }, 'user123');
-console.log(weatherResult);
 
 // Example: Send an email
 const emailResult = await handleToolCall(

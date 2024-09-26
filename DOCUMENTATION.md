@@ -72,7 +72,6 @@ and ease of maintenance. The key components of the architecture include:
     STABILITY_KEY=your_stability_ai_key
     CLAUDE_KEY=your_anthropic_claude_key
     JWT_TOKEN=your_jwt_secret
-    OPENWEATHER_API_KEY=your_openweather_api_key
     YAHOO_FINANCE_API_KEY=your_yahoo_finance_api_key
     TELEGRAM_KEY=your_telegram_bot_key
     EMAIL=your_gmail_address

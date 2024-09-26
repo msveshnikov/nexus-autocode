@@ -12,7 +12,6 @@ services:
             - STABILITY_KEY=${STABILITY_KEY}
             - CLAUDE_KEY=${CLAUDE_KEY}
             - JWT_TOKEN=${JWT_TOKEN}
-            - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
             - YAHOO_FINANCE_API_KEY=${YAHOO_FINANCE_API_KEY}
             - TELEGRAM_KEY=${TELEGRAM_KEY}
             - EMAIL=${EMAIL}
