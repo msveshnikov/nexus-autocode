@@ -161,7 +161,6 @@ export const tools = [
             required: ['lang']
         }
     },
-
     {
         name: 'schedule_task',
         description: 'Schedule a task for execution.',
@@ -217,7 +216,6 @@ export const tools = [
             required: ['videoId']
         }
     },
-
     {
         name: 'save_artifact',
         description:
@@ -497,7 +495,6 @@ export const handleToolCall = async (name, args, userId) => {
             return executePython(args.code);
         case 'get_latest_news':
             return getLatestNews(args.lang);
-
         case 'schedule_task':
             return scheduleTask(args.taskId, args.schedule);
         case 'stop_scheduled_task':
@@ -506,7 +503,6 @@ export const handleToolCall = async (name, args, userId) => {
             return getScheduledTasks(userId);
         case 'summarize_youtube_video':
             return summarizeYouTubeVideo(args.videoId);
-
         case 'save_artifact':
             return saveArtifact(args.artifactName, args.content, args.type, userId);
         case 'generate_image':
