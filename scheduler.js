@@ -1,12 +1,22 @@
 import cron from 'node-cron';
 import { Task } from './model/Task.js';
+import { User } from './model/User.js';
 import { sendEmail } from './tools.js';
 import { getTextGpt } from './openai.js';
 import { getTextGemini } from './gemini.js';
 import { getTextClaude } from './claude.js';
 import { getTextTogether } from './together.js';
 import { emailSignature } from './email.js';
-import { executePython } from './utils.js';
+import {
+    executePython,
+    addCalendarEvent,
+    generateImage,
+    findPendingTasks,
+    findTasksByPriority,
+    findOverdueTasks,
+    findTasksForParallelExecution,
+    findCompletedTasksInDateRange
+} from './utils.js';
 
 const scheduledTasks = new Map();
 
@@ -126,6 +136,28 @@ export const executeTask = async (task) => {
         task.addExecutionLog(`Python execution result: ${pythonResult}`);
     }
 
+    if (task.tools.includes('calendar')) {
+        const eventDetails = extractEventDetails(result);
+        if (eventDetails) {
+            const calendarResult = await addCalendarEvent(
+                eventDetails.title,
+                eventDetails.description,
+                eventDetails.startTime,
+                eventDetails.endTime,
+                task.user._id
+            );
+            task.addExecutionLog(`Calendar event added: ${calendarResult}`);
+        }
+    }
+
+    if (task.tools.includes('image_generation')) {
+        const imagePrompt = extractImagePrompt(result);
+        if (imagePrompt) {
+            const imageResult = await generateImage(imagePrompt);
+            task.addExecutionLog(`Image generated: ${imageResult}`);
+        }
+    }
+
     task.status = 'completed';
     await task.save();
 
@@ -140,7 +172,7 @@ export const executeTask = async (task) => {
 };
 
 export const processTaskQueue = async () => {
-    const pendingTasks = await Task.findPendingTasks();
+    const pendingTasks = await findPendingTasks();
     for (const task of pendingTasks) {
         try {
             await executeTask(task);
@@ -157,4 +189,70 @@ export const initializeScheduler = () => {
     cron.schedule('*/5 * * * *', async () => {
         await processTaskQueue();
     });
+
+    cron.schedule('0 * * * *', async () => {
+        await processOverdueTasks();
+    });
+
+    cron.schedule('0 0 * * *', async () => {
+        await generateDailyReport();
+    });
 };
+
+export const processOverdueTasks = async () => {
+    const overdueTasks = await findOverdueTasks();
+    for (const task of overdueTasks) {
+        task.priority += 1;
+        task.addExecutionLog('Task priority increased due to being overdue');
+        await task.save();
+    }
+};
+
+export const generateDailyReport = async () => {
+    const users = await User.find();
+    for (const user of users) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const today = new Date();
+        const completedTasks = await findCompletedTasksInDateRange(user._id, yesterday, today);
+        const pendingTasks = await findPendingTasks(user._id);
+
+        const report = `
+Daily Task Report
+
+Completed Tasks (${completedTasks.length}):
+${completedTasks.map((task) => `- ${task.title}`).join('\n')}
+
+Pending Tasks (${pendingTasks.length}):
+${pendingTasks.map((task) => `- ${task.title} (Priority: ${task.priority})`).join('\n')}
+        `;
+
+        await sendEmail(user.email, 'Daily Task Report', report, user._id);
+    }
+};
+
+export const parallelTaskExecution = async () => {
+    const tasks = await findTasksForParallelExecution();
+    const executionPromises = tasks.map((task) => executeTask(task));
+    await Promise.all(executionPromises);
+};
+
+function extractEventDetails(text) {
+    const regex = /Event: (.+)\nDescription: (.+)\nStart: (.+)\nEnd: (.+)/;
+    const match = text.match(regex);
+    if (match) {
+        return {
+            title: match[1],
+            description: match[2],
+            startTime: new Date(match[3]),
+            endTime: new Date(match[4])
+        };
+    }
+    return null;
+}
+
+function extractImagePrompt(text) {
+    const regex = /Generate image: (.+)/;
+    const match = text.match(regex);
+    return match ? match[1] : null;
+}

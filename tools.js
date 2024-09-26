@@ -17,8 +17,19 @@ import {
     initiateTask,
     updateTaskStatus,
     addSubTask,
-    findPendingTasks
+    findPendingTasks,
+    getWeather,
+    assignAgentToTask,
+    addToolToTask,
+    addArtifactToTask,
+    addExecutionLogToTask,
+    setTaskMetadata,
+    findTasksByPriority,
+    findOverdueTasks,
+    findTasksForParallelExecution,
+    findCompletedTasksInDateRange
 } from './utils.js';
+import { scheduleTask, stopScheduledTask, getScheduledTasks } from './scheduler.js';
 
 const bot = new TelegramBot(process.env.TELEGRAM_KEY);
 const transporter = nodemailer.createTransport({
@@ -196,26 +207,40 @@ export const tools = [
         }
     },
     {
-        name: 'schedule_action',
-        description: 'Schedule any action (prompt) hourly or daily.',
+        name: 'schedule_task',
+        description: 'Schedule a task for execution.',
         input_schema: {
             type: 'object',
             properties: {
-                action: {
+                taskId: {
                     type: 'string',
-                    description: 'The action (prompt) to be scheduled'
+                    description: 'The ID of the task to schedule'
                 },
                 schedule: {
                     type: 'string',
-                    description: 'The schedule for the action execution (hourly or daily)'
+                    description: 'The cron schedule for the task execution'
                 }
             },
-            required: ['action', 'schedule']
+            required: ['taskId', 'schedule']
         }
     },
     {
-        name: 'stop_scheduled_action',
-        description: 'Stop and remove any scheduled task for user.',
+        name: 'stop_scheduled_task',
+        description: 'Stop a scheduled task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'The ID of the task to stop'
+                }
+            },
+            required: ['taskId']
+        }
+    },
+    {
+        name: 'get_scheduled_tasks',
+        description: 'Get all scheduled tasks for the user.',
         input_schema: {
             type: 'object',
             properties: {},
@@ -321,7 +346,7 @@ export const tools = [
         }
     },
     {
-        name: 'initiateTask',
+        name: 'initiate_task',
         description: 'Initiate a new task for processing.',
         input_schema: {
             type: 'object',
@@ -383,6 +408,150 @@ export const tools = [
             properties: {},
             required: []
         }
+    },
+    {
+        name: 'assign_agent_to_task',
+        description: 'Assign an agent to a task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'The ID of the task'
+                },
+                agentId: {
+                    type: 'string',
+                    description: 'The ID of the agent to assign'
+                }
+            },
+            required: ['taskId', 'agentId']
+        }
+    },
+    {
+        name: 'add_tool_to_task',
+        description: 'Add a tool to a task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'The ID of the task'
+                },
+                toolName: {
+                    type: 'string',
+                    description: 'The name of the tool to add'
+                }
+            },
+            required: ['taskId', 'toolName']
+        }
+    },
+    {
+        name: 'add_artifact_to_task',
+        description: 'Add an artifact to a task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'The ID of the task'
+                },
+                artifactId: {
+                    type: 'string',
+                    description: 'The ID of the artifact to add'
+                }
+            },
+            required: ['taskId', 'artifactId']
+        }
+    },
+    {
+        name: 'add_execution_log_to_task',
+        description: 'Add an execution log to a task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'The ID of the task'
+                },
+                log: {
+                    type: 'string',
+                    description: 'The execution log to add'
+                }
+            },
+            required: ['taskId', 'log']
+        }
+    },
+    {
+        name: 'set_task_metadata',
+        description: 'Set metadata for a task.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'The ID of the task'
+                },
+                key: {
+                    type: 'string',
+                    description: 'The metadata key'
+                },
+                value: {
+                    type: 'string',
+                    description: 'The metadata value'
+                }
+            },
+            required: ['taskId', 'key', 'value']
+        }
+    },
+    {
+        name: 'find_tasks_by_priority',
+        description: 'Find tasks by priority.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                minPriority: {
+                    type: 'number',
+                    description: 'The minimum priority to filter tasks'
+                }
+            },
+            required: ['minPriority']
+        }
+    },
+    {
+        name: 'find_overdue_tasks',
+        description: 'Find overdue tasks.',
+        input_schema: {
+            type: 'object',
+            properties: {},
+            required: []
+        }
+    },
+    {
+        name: 'find_tasks_for_parallel_execution',
+        description: 'Find tasks suitable for parallel execution.',
+        input_schema: {
+            type: 'object',
+            properties: {},
+            required: []
+        }
+    },
+    {
+        name: 'find_completed_tasks_in_date_range',
+        description: 'Find completed tasks within a date range.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                startDate: {
+                    type: 'string',
+                    description: 'The start date in ISO format'
+                },
+                endDate: {
+                    type: 'string',
+                    description: 'The end date in ISO format'
+                }
+            },
+            required: ['startDate', 'endDate']
+        }
     }
 ];
 
@@ -411,34 +580,48 @@ export const handleToolCall = async (name, args, userId) => {
             return persistUserInfo(args.key, args.value, userId);
         case 'remove_user_info':
             return removeUserInfo(userId);
-        case 'schedule_action':
-            return scheduleAction(args.action, args.schedule, userId);
-        case 'stop_scheduled_action':
-            return stopScheduledAction(userId);
+        case 'schedule_task':
+            return scheduleTask(args.taskId, args.schedule);
+        case 'stop_scheduled_task':
+            return stopScheduledTask(args.taskId);
+        case 'get_scheduled_tasks':
+            return getScheduledTasks(userId);
         case 'summarize_youtube_video':
             return summarizeYouTubeVideo(args.videoId);
         case 'add_calendar_event':
-            return addCalendarEvent(
-                args.title,
-                args.description,
-                args.startTime,
-                args.endTime,
-                userId
-            );
+            return addCalendarEvent(args.title, args.description, args.startTime, args.endTime, userId);
         case 'get_user_subscription_info':
             return getUserSubscriptionInfo(userId);
         case 'save_artifact':
             return saveArtifact(args.artifactName, args.content, args.type, userId);
         case 'generate_image':
             return generateImage(args.description);
-        case 'initiateTask':
+        case 'initiate_task':
             return initiateTask(args.taskDescription, userId, args.model);
         case 'create_sub_task':
             return addSubTask(args.parentTaskId, args.description);
         case 'update_task_status':
             return updateTaskStatus(args.taskId, args.status);
         case 'get_pending_tasks':
-            return getPendingTasks(userId);
+            return findPendingTasks(userId);
+        case 'assign_agent_to_task':
+            return assignAgentToTask(args.taskId, args.agentId);
+        case 'add_tool_to_task':
+            return addToolToTask(args.taskId, args.toolName);
+        case 'add_artifact_to_task':
+            return addArtifactToTask(args.taskId, args.artifactId);
+        case 'add_execution_log_to_task':
+            return addExecutionLogToTask(args.taskId, args.log);
+        case 'set_task_metadata':
+            return setTaskMetadata(args.taskId, args.key, args.value);
+        case 'find_tasks_by_priority':
+            return findTasksByPriority(userId, args.minPriority);
+        case 'find_overdue_tasks':
+            return findOverdueTasks(userId);
+        case 'find_tasks_for_parallel_execution':
+            return findTasksForParallelExecution(userId);
+        case 'find_completed_tasks_in_date_range':
+            return findCompletedTasksInDateRange(userId, new Date(args.startDate), new Date(args.endDate));
         default:
             throw new Error(`Unsupported function call: ${name}`);
     }
@@ -519,39 +702,5 @@ async function removeUserInfo(userId) {
     } catch (error) {
         console.error('Error removing user information and artifacts:', error);
         return 'Error removing user information and artifacts: ' + error.message;
-    }
-}
-
-async function scheduleAction(action, schedule, userId) {
-    try {
-        const user = await User.findById(userId);
-        user.scheduledAction = { action, schedule };
-        await user.save();
-        return `Action scheduled successfully: ${action} (${schedule})`;
-    } catch (error) {
-        console.error('Error scheduling action:', error);
-        return 'Error scheduling action: ' + error.message;
-    }
-}
-
-async function stopScheduledAction(userId) {
-    try {
-        const user = await User.findById(userId);
-        user.scheduledAction = null;
-        await user.save();
-        return 'Scheduled action stopped and removed successfully.';
-    } catch (error) {
-        console.error('Error stopping scheduled action:', error);
-        return 'Error stopping scheduled action: ' + error.message;
-    }
-}
-
-async function getPendingTasks(userId) {
-    try {
-        const tasks = await findPendingTasks(userId);
-        return tasks.map((task) => `${task.title} (${task.status})`).join('\n');
-    } catch (error) {
-        console.error('Error getting pending tasks:', error);
-        return 'Error getting pending tasks: ' + error.message;
     }
 }

@@ -23,9 +23,9 @@ import { getTextClaude } from './claude.js';
 import { getTextTogether } from './together.js';
 import { getTextGpt } from './openai.js';
 import { getImage } from './image.js';
-import { executeTask } from './scheduler.js';
+import { executeTask, initializeScheduler, scheduleTask, stopScheduledTask } from './scheduler.js';
 import { handleToolCall } from './tools.js';
-import { processFile, processUrlContent } from './utils.js';
+import { processFile, processUrlContent, findPendingTasks } from './utils.js';
 
 dotenv.config({ override: true });
 
@@ -329,6 +329,36 @@ app.post('/api/tasks/:id/execute', verifyToken, async (req, res) => {
     }
 });
 
+app.post('/api/tasks/:id/schedule', verifyToken, async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        const { schedule } = req.body;
+        const result = await scheduleTask(taskId, schedule);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error scheduling task: ' + error.message });
+    }
+});
+
+app.post('/api/tasks/:id/stop-schedule', verifyToken, async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        const result = await stopScheduledTask(taskId);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error stopping scheduled task: ' + error.message });
+    }
+});
+
+app.get('/api/tasks/pending', verifyToken, async (req, res) => {
+    try {
+        const pendingTasks = await findPendingTasks(req.user.id);
+        res.json(pendingTasks);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching pending tasks: ' + error.message });
+    }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -368,6 +398,8 @@ io.on('connection', (socket) => {
         console.log('User disconnected');
     });
 });
+
+initializeScheduler();
 
 server.listen(3000, () => {
     console.log(`🚀 Server started on port 3000`);

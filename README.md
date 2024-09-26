@@ -124,5 +124,8 @@ https://nexus.autocode.work/
 
 -   create scheduling for resoling task (and breaking into subtasks)
 -   after initiation task should be in queue for execution
+-   execute pending tasks 
+-   add full logs for AI model calls
 -   auto refresh task logs and artifacts
 -   make logs colorful
+-   add loop of execution/splitting/thinking/creating/ etc
