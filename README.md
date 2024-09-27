@@ -122,8 +122,6 @@ https://nexus.autocode.work/
 
 # TODO
 
--   handleToolCall initiateTask { taskDescription: 'make me rich', model: 'gpt-3.5-turbo' }
-Error: Unsupported function call: initiateTask
 -   create scheduling for resoling task (and breaking into subtasks)
 -   after initiation task should be in queue for execution
 -   execute pending tasks 
