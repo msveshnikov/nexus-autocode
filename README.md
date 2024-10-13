@@ -122,9 +122,10 @@ https://nexus.autocode.work/
 
 # TODO
 
+-   make landing design super cool with parallax and animations and add more info
 -   create scheduling for resoling task (and breaking into subtasks)
 -   after initiation task should be in queue for execution
--   execute pending tasks 
+-   execute pending tasks
 -   add full logs for AI model calls
 -   auto refresh task logs and artifacts
 -   make logs colorful

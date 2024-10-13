@@ -22,6 +22,7 @@
                 line-height: 1.6;
                 color: #333;
                 background: #f0f2f5;
+                overflow-x: hidden;
             }
             .bg-primary {
                 background-color: var(--primary-color);
@@ -41,6 +42,21 @@
             .border-secondary {
                 border-color: var(--secondary-color);
             }
+            .parallax {
+                background-attachment: fixed;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: cover;
+            }
+            .animate-fade-in {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            }
+            .animate-fade-in.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
         </style>
     </head>
     <body class="flex flex-col min-h-screen">
@@ -59,7 +75,6 @@
                                 >Design</a
                             >
                         </li>
-
                         <li>
                             <a href="/login" class="hover:text-secondary transition-colors"
                                 >Login</a
@@ -77,19 +92,21 @@
 
         <main class="flex-grow">
             <section
-                class="hero bg-cover bg-center h-screen flex items-center relative"
+                class="hero parallax h-screen flex items-center relative"
                 style="background-image: url('/AI.png')"
             >
                 <div class="absolute inset-0 bg-black opacity-60"></div>
                 <div class="container mx-auto text-center relative z-1 text-white">
-                    <h1 class="text-4xl font-bold mb-4">Nexus: Agentic AI Framework</h1>
-                    <p class="text-xl mb-8">
+                    <h1 class="text-4xl font-bold mb-4 animate-fade-in">
+                        Nexus: Agentic AI Framework
+                    </h1>
+                    <p class="text-xl mb-8 animate-fade-in">
                         Revolutionize complex task solving with advanced AI collaboration and
                         seamless tool integration
                     </p>
                     <a
                         href="/app"
-                        class="bg-secondary text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors"
+                        class="bg-secondary text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors animate-fade-in"
                         >Get Started</a
                     >
                 </div>
@@ -97,9 +114,11 @@
 
             <section id="features" class="py-20 bg-white">
                 <div class="container mx-auto">
-                    <h2 class="text-4xl font-bold text-center mb-12 text-primary">Key Features</h2>
+                    <h2 class="text-4xl font-bold text-center mb-12 text-primary animate-fade-in">
+                        Key Features
+                    </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Multi-agent Collaboration
                             </h3>
@@ -108,7 +127,7 @@
                                 harmony to tackle complex challenges.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Dynamic Tool Selection
                             </h3>
@@ -117,7 +136,7 @@
                                 unique task, optimizing efficiency and results.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 External API Integration
                             </h3>
@@ -126,7 +145,7 @@
                                 sources to enhance capabilities and insights.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Task Decomposition
                             </h3>
@@ -135,7 +154,7 @@
                                 processing and parallel execution.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Adaptive Learning
                             </h3>
@@ -144,7 +163,7 @@
                                 feedback, and cutting-edge machine learning techniques.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md">
+                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Real-time Decision Making
                             </h3>
@@ -157,13 +176,17 @@
                 </div>
             </section>
 
-            <section id="design" class="py-20 bg-gray-100">
+            <section
+                id="design"
+                class="py-20 bg-gray-100 parallax"
+                style="background-image: url('/design-bg.jpg')"
+            >
                 <div class="container mx-auto">
-                    <h2 class="text-4xl font-bold text-center mb-12 text-primary">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-white animate-fade-in">
                         Design Considerations
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
+                        <div class="design-card p-6 bg-white rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">AI Models</h3>
                             <ul class="list-disc pl-5">
                                 <li>Multiple AI provider integration</li>
@@ -173,7 +196,7 @@
                                 <li>Fine-tuning for specific tasks</li>
                             </ul>
                         </div>
-                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
+                        <div class="design-card p-6 bg-white rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Tool Integration
                             </h3>
@@ -185,7 +208,7 @@
                                 <li>Plugin system for new tools</li>
                             </ul>
                         </div>
-                        <div class="design-card p-6 bg-white rounded-lg shadow-md">
+                        <div class="design-card p-6 bg-white rounded-lg shadow-md animate-fade-in">
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Security and Privacy
                             </h3>
@@ -207,5 +230,23 @@
                 <p>&copy; 2024 Nexus. All rights reserved.</p>
             </div>
         </footer>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const animatedElements = document.querySelectorAll('.animate-fade-in');
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('visible');
+                            }
+                        });
+                    },
+                    { threshold: 0.1 }
+                );
+
+                animatedElements.forEach((el) => observer.observe(el));
+            });
+        </script>
     </body>
 </html>
