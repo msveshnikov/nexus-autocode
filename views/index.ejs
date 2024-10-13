@@ -4,14 +4,8 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Nexus - Agentic AI Framework</title>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
-            rel="stylesheet"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-            rel="stylesheet"
-        />
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
         <style>
             :root {
                 --primary-color: #1a237e;
@@ -79,14 +73,19 @@
                 transform: translateY(-5px);
                 box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 1rem;
+            }
         </style>
     </head>
     <body class="flex flex-col min-h-screen">
-        <header class="bg-primary text-white p-6 fixed w-full z-10">
+        <header class="bg-primary text-white p-4 fixed w-full z-10">
             <div class="container mx-auto flex justify-between items-center">
-                <h1 class="text-3xl font-bold">Nexus</h1>
+                <h1 class="text-2xl font-bold">Nexus</h1>
                 <nav>
-                    <ul class="flex space-x-6">
+                    <ul class="flex space-x-4">
                         <li><a href="#features" class="hover:text-secondary transition-colors">Features</a></li>
                         <li><a href="#design" class="hover:text-secondary transition-colors">Design</a></li>
                         <li><a href="#roadmap" class="hover:text-secondary transition-colors">Roadmap</a></li>
@@ -97,53 +96,53 @@
             </div>
         </header>
 
-        <main class="flex-grow pt-24">
-            <section class="hero parallax h-screen flex items-center" style="background-image: url('/AI.png')">
+        <main class="flex-grow pt-16">
+            <section class="hero parallax h-screen flex items-center" style="background-image: url('/AI.webp')">
                 <div class="container mx-auto text-center hero-content">
-                    <h1 class="text-6xl font-bold mb-6 text-white animate-fade-in">Nexus: Agentic AI Framework</h1>
-                    <p class="text-2xl mb-10 text-white animate-fade-in">Revolutionize complex task solving with advanced AI collaboration and seamless tool integration</p>
-                    <a href="/app" class="bg-secondary text-primary px-10 py-4 rounded-full text-xl font-semibold hover:bg-opacity-90 transition-colors animate-fade-in">Get Started</a>
+                    <h1 class="text-5xl font-bold mb-6 text-white animate-fade-in">Nexus: Agentic AI Framework</h1>
+                    <p class="text-xl mb-10 text-white animate-fade-in">Revolutionize complex task solving with advanced AI collaboration and seamless tool integration</p>
+                    <a href="/app" class="bg-secondary text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors animate-fade-in">Get Started</a>
                 </div>
             </section>
 
-            <section id="features" class="py-24 bg-white">
+            <section id="features" class="py-20 bg-white">
                 <div class="container mx-auto">
-                    <h2 class="text-5xl font-bold text-center mb-16 text-primary animate-fade-in">Key Features</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-primary animate-fade-in">Key Features</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div class="feature-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Multi-agent Collaboration</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Multi-agent Collaboration</h3>
                             <p>Harness the collective intelligence of multiple AI agents working in harmony to tackle complex challenges.</p>
                         </div>
                         <div class="feature-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Dynamic Tool Selection</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Dynamic Tool Selection</h3>
                             <p>Automatically identify and deploy the most effective tools for each unique task, optimizing efficiency and results.</p>
                         </div>
                         <div class="feature-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">External API Integration</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">External API Integration</h3>
                             <p>Seamlessly connect with a wide array of external services and data sources to enhance capabilities and insights.</p>
                         </div>
                         <div class="feature-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Task Decomposition</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Task Decomposition</h3>
                             <p>Break down complex tasks into manageable subtasks for efficient processing and parallel execution.</p>
                         </div>
                         <div class="feature-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Adaptive Learning</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Adaptive Learning</h3>
                             <p>Continuously evolve and refine performance through experience, feedback, and cutting-edge machine learning techniques.</p>
                         </div>
                         <div class="feature-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Real-time Decision Making</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Real-time Decision Making</h3>
                             <p>Make informed decisions on-the-fly using real-time data analysis and predictive modeling.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="design" class="py-24 bg-gray-100 parallax" style="background-image: url('/design-bg.jpg')">
+            <section id="design" class="py-20 bg-gray-100 parallax" style="background-image: url('/design-bg.jpg')">
                 <div class="container mx-auto">
-                    <h2 class="text-5xl font-bold text-center mb-16 text-white animate-fade-in">Design Considerations</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-white animate-fade-in">Design Considerations</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div class="design-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">AI Models</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">AI Models</h3>
                             <ul class="list-disc pl-5">
                                 <li>Multiple AI provider integration</li>
                                 <li>Model pairing for optimal performance</li>
@@ -153,7 +152,7 @@
                             </ul>
                         </div>
                         <div class="design-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Tool Integration</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Tool Integration</h3>
                             <ul class="list-disc pl-5">
                                 <li>Standardized interface for tools</li>
                                 <li>Automatic tool discovery</li>
@@ -163,7 +162,7 @@
                             </ul>
                         </div>
                         <div class="design-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Architecture</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Architecture</h3>
                             <ul class="list-disc pl-5">
                                 <li>Modular design for easy extension</li>
                                 <li>Microservices-based approach</li>
@@ -176,12 +175,12 @@
                 </div>
             </section>
 
-            <section id="roadmap" class="py-24 bg-white">
+            <section id="roadmap" class="py-20 bg-white">
                 <div class="container mx-auto">
-                    <h2 class="text-5xl font-bold text-center mb-16 text-primary animate-fade-in">Development Roadmap</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-primary animate-fade-in">Development Roadmap</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="roadmap-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Current Focus</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Current Focus</h3>
                             <ul class="list-disc pl-5">
                                 <li>Implement web dashboard for task initiation and progress tracking</li>
                                 <li>Develop RESTful API endpoints for task management</li>
@@ -190,7 +189,7 @@
                             </ul>
                         </div>
                         <div class="roadmap-card animate-fade-in">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Future Enhancements</h3>
+                            <h3 class="text-xl font-semibold mb-3 text-primary">Future Enhancements</h3>
                             <ul class="list-disc pl-5">
                                 <li>Implement advanced analytics and reporting features</li>
                                 <li>Add full logs for AI model calls</li>
@@ -204,7 +203,7 @@
             </section>
         </main>
 
-        <footer class="bg-primary text-white py-10">
+        <footer class="bg-primary text-white py-8">
             <div class="container mx-auto text-center">
                 <p>&copy; 2024 Nexus. All rights reserved.</p>
             </div>
