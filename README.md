@@ -181,5 +181,3 @@ We welcome contributions from the community! Please check our
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-![alt text](image.png)
