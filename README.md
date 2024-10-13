@@ -34,6 +34,7 @@ https://nexus.autocode.work/
 -   Service mesh for improved inter-service communication
 -   NodeJS with ES6 imports and ExpressJS for dashboard
 -   EJS templating for dynamic UI components
+-   GraphQL API for flexible data querying and manipulation
 
 ### AI Models
 
@@ -43,6 +44,7 @@ https://nexus.autocode.work/
 -   Federated learning for privacy-preserving model updates
 -   Model compression techniques for edge deployment
 -   Fine-tuning capabilities for domain-specific tasks
+-   Multi-modal AI integration for handling diverse data types
 
 ### Tool Integration
 
@@ -52,6 +54,7 @@ https://nexus.autocode.work/
 -   A/B testing framework for tool performance evaluation
 -   Dedicated tools for email, image processing, search, and YouTube interactions
 -   Plugin system for easy addition of new tools
+-   Tool chaining for complex workflows
 
 ### External Connectors
 
@@ -61,6 +64,7 @@ https://nexus.autocode.work/
 -   Cloud storage services
 -   YouTube data extraction
 -   API connectors for popular services and databases
+-   Blockchain integration for decentralized applications
 
 ### Task Management
 
@@ -70,6 +74,7 @@ https://nexus.autocode.work/
 -   Automated task parallelization
 -   Dependency management for complex workflows
 -   Task templating for common workflows
+-   Intelligent task routing based on agent capabilities
 
 ### User Interface
 
@@ -78,6 +83,7 @@ https://nexus.autocode.work/
 -   Visualization tools for task progress and system performance
 -   Customizable reporting and analytics
 -   Mobile-responsive design for on-the-go access
+-   Dark mode and accessibility features
 
 ### Scalability and Performance
 
@@ -87,12 +93,31 @@ https://nexus.autocode.work/
 -   Load balancing for optimal resource utilization
 -   Prompt caching for improved response times
 -   Database sharding for improved query performance
+-   Edge computing support for reduced latency
 
 ### Documentation and Knowledge Management
 
 -   Auto-generated API documentation
 -   RAG-based knowledge retrieval and management
 -   Knowledge base for common issues and best practices
+-   Interactive tutorials and onboarding guides
+-   Version-controlled documentation
+
+### Security and Compliance
+
+-   End-to-end encryption for sensitive data
+-   Role-based access control (RBAC)
+-   Audit logging for all system actions
+-   GDPR and CCPA compliance features
+-   Regular security audits and penetration testing
+
+### Monitoring and Observability
+
+-   Distributed tracing for request flows
+-   Real-time metrics and alerting
+-   Log aggregation and analysis
+-   Performance profiling tools
+-   Anomaly detection for system health
 
 ## Project Structure
 
@@ -102,8 +127,9 @@ https://nexus.autocode.work/
 -   Scheduler for task management
 -   Tools module for integrating various tools
 -   Python scripts for shell interactions on different platforms
--   Model directory for data models (Artifact, User)
+-   Model directory for data models (Artifact, Task, User)
 -   Public directory for static assets and EJS templates
+-   Documentation and landing page assets
 
 ## Getting Started
 
@@ -119,14 +145,39 @@ https://nexus.autocode.work/
 -   Develop RESTful API endpoints for task management
 -   Implement real-time updates using WebSockets
 -   Implement advanced analytics and reporting features
+-   Develop AI model fine-tuning pipeline
+-   Implement multi-agent collaboration protocols
+-   Create a marketplace for community-contributed tools and plugins
+-   Develop a mobile app for on-the-go task management
+-   Implement natural language processing for voice-based task submission
+-   Integrate with popular project management tools (e.g., Jira, Trello)
 
 # TODO
 
--   make landing design super cool with parallax and animations and add more info
--   create scheduling for resoling task (and breaking into subtasks)
--   after initiation task should be in queue for execution
--   execute pending tasks
--   add full logs for AI model calls
--   auto refresh task logs and artifacts
--   make logs colorful
--   add loop of execution/splitting/thinking/creating/ etc
+-   Make landing design super cool with parallax and animations and add more info
+-   Create scheduling for resolving task (and breaking into subtasks)
+-   After initiation task should be in queue for execution
+-   Execute pending tasks
+-   Add full logs for AI model calls
+-   Auto refresh task logs and artifacts
+-   Make logs colorful
+-   Add loop of execution/splitting/thinking/creating/ etc
+-   Implement user authentication and authorization system
+-   Develop a plugin marketplace for community contributions
+-   Create a comprehensive test suite for all components
+-   Implement a feedback loop for continuous AI model improvement
+-   Develop a CLI tool for local task management and system control
+-   Create interactive tutorials for new users
+-   Implement a recommendation system for tool selection
+-   Develop a visual workflow builder for complex tasks
+-   Implement multi-language support for the UI
+-   Create a public API for third-party integrations
+
+## Contributing
+
+We welcome contributions from the community! Please check our
+[Contributing Guidelines](CONTRIBUTING.md) for more information on how to get started.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
