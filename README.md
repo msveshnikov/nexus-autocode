@@ -34,7 +34,6 @@ https://nexus.autocode.work/
 -   Service mesh for improved inter-service communication
 -   NodeJS with ES6 imports and ExpressJS for dashboard
 -   EJS templating for dynamic UI components
--   GraphQL API for flexible data querying and manipulation
 
 ### AI Models
 
@@ -102,14 +101,6 @@ https://nexus.autocode.work/
 -   Knowledge base for common issues and best practices
 -   Interactive tutorials and onboarding guides
 -   Version-controlled documentation
-
-### Security and Compliance
-
--   End-to-end encryption for sensitive data
--   Role-based access control (RBAC)
--   Audit logging for all system actions
--   GDPR and CCPA compliance features
--   Regular security audits and penetration testing
 
 ### Monitoring and Observability
 

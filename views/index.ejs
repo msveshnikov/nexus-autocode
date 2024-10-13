@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Nexus - Agentic AI Framework</title>
         <link
-            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
             rel="stylesheet"
         />
         <link
@@ -14,15 +14,16 @@
         />
         <style>
             :root {
-                --primary-color: #1a237e;
-                --secondary-color: #6efff5;
-                --tertiary-color: #ff6e9c;
-                --background-color: #f0f2f5;
+                --primary-color: #00ffff;
+                --secondary-color: #39ff14;
+                --tertiary-color: #1e90ff;
+                --background-color: #0a0a0a;
+                --text-color: #ffffff;
             }
             body {
-                font-family: 'Roboto', sans-serif;
+                font-family: 'Orbitron', sans-serif;
                 line-height: 1.6;
-                color: #333;
+                color: var(--text-color);
                 background: var(--background-color);
                 overflow-x: hidden;
             }
@@ -96,24 +97,87 @@
                 transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
                 padding: 2rem;
                 border-radius: 1rem;
-                background-color: rgba(255, 255, 255, 0.9);
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                background-color: rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 6px rgba(0, 255, 255, 0.1);
+                border: 1px solid var(--primary-color);
             }
             .feature-card:hover,
             .design-card:hover,
             .roadmap-card:hover {
                 transform: translateY(-5px);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 10px 20px rgba(0, 255, 255, 0.2);
             }
             .container {
                 max-width: 1200px;
                 margin: 0 auto;
                 padding: 0 1rem;
             }
+            .glitch {
+                position: relative;
+                color: var(--primary-color);
+                font-size: 4rem;
+                letter-spacing: 0.5rem;
+                animation: glitch 1s linear infinite;
+            }
+            @keyframes glitch {
+                2%,
+                64% {
+                    transform: translate(2px, 0) skew(0deg);
+                }
+                4%,
+                60% {
+                    transform: translate(-2px, 0) skew(0deg);
+                }
+                62% {
+                    transform: translate(0, 0) skew(5deg);
+                }
+            }
+            .glitch:before,
+            .glitch:after {
+                content: attr(title);
+                position: absolute;
+                left: 0;
+            }
+            .glitch:before {
+                animation: glitchTop 1s linear infinite;
+                clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+                -webkit-clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+            }
+            @keyframes glitchTop {
+                2%,
+                64% {
+                    transform: translate(2px, -2px);
+                }
+                4%,
+                60% {
+                    transform: translate(-2px, 2px);
+                }
+                62% {
+                    transform: translate(13px, -1px) skew(-13deg);
+                }
+            }
+            .glitch:after {
+                animation: glitchBotom 1.5s linear infinite;
+                clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+                -webkit-clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+            }
+            @keyframes glitchBotom {
+                2%,
+                64% {
+                    transform: translate(-2px, 0);
+                }
+                4%,
+                60% {
+                    transform: translate(-2px, 0);
+                }
+                62% {
+                    transform: translate(-22px, 5px) skew(21deg);
+                }
+            }
         </style>
     </head>
     <body class="flex flex-col min-h-screen">
-        <header class="bg-primary text-white p-4 fixed w-full z-10">
+        <header class="bg-primary text-black p-4 fixed w-full z-10">
             <div class="container mx-auto flex justify-between items-center">
                 <h1 class="text-2xl font-bold">Nexus</h1>
                 <nav>
@@ -139,22 +203,27 @@
                 style="background-image: url('/ai.webp')"
             >
                 <div class="container mx-auto text-center hero-content">
-                    <h1 class="text-5xl font-bold mb-6 text-white animate-fade-in">
-                        Nexus: Agentic AI Framework
+                    <h1
+                        class="text-5xl font-bold mb-6 text-white "
+                        title="Nexus: Agentic AI Framework"
+                    >
+                        Nexus: Agentic AI
                     </h1>
+                    
+
                     <p class="text-xl mb-10 text-white animate-fade-in">
                         Revolutionize complex task solving with advanced AI collaboration and
                         seamless tool integration
                     </p>
                     <a
                         href="/app"
-                        class="bg-secondary text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors animate-fade-in"
+                        class="bg-secondary text-background-color px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors animate-fade-in"
                         >Get Started</a
                     >
                 </div>
             </section>
 
-            <section id="features" class="py-20 bg-white">
+            <section id="features" class="py-20 bg-background-color">
                 <div class="container mx-auto">
                     <h2 class="text-4xl font-bold text-center mb-12 text-primary animate-fade-in">
                         Key Features
@@ -220,11 +289,11 @@
 
             <section
                 id="design"
-                class="py-20 bg-gray-100 parallax"
+                class="py-20 bg-gray-900 parallax"
                 style="background-image: url('/design-bg.png')"
             >
                 <div class="container mx-auto">
-                    <h2 class="text-4xl font-bold text-center mb-12 text-white animate-fade-in">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-primary animate-fade-in">
                         Design Considerations
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -264,7 +333,7 @@
                 </div>
             </section>
 
-            <section id="roadmap" class="py-20 bg-white">
+            <section id="roadmap" class="py-20 bg-background-color">
                 <div class="container mx-auto">
                     <h2 class="text-4xl font-bold text-center mb-12 text-primary animate-fade-in">
                         Development Roadmap
@@ -301,9 +370,9 @@
             </section>
         </main>
 
-        <footer class="bg-primary text-white py-8">
+        <footer class="bg-primary text-black py-8">
             <div class="container mx-auto text-center">
-                <p>&copy; 2024 Nexus. All rights reserved.</p>
+                <p>&copy; 2024 MaxSoft. All rights reserved.</p>
             </div>
         </footer>
 
