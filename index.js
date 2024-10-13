@@ -25,7 +25,15 @@ import { getTextGpt } from './openai.js';
 import { getImage } from './image.js';
 import { executeTask, initializeScheduler, scheduleTask, stopScheduledTask } from './scheduler.js';
 import { handleToolCall } from './tools.js';
-import { processFile, processUrlContent, findPendingTasks } from './utils.js';
+import {
+    processFile,
+    processUrlContent,
+    findPendingTasks,
+    findTasksByPriority,
+    findOverdueTasks,
+    findTasksForParallelExecution,
+    findCompletedTasksInDateRange
+} from './utils.js';
 
 dotenv.config({ override: true });
 
@@ -356,6 +364,49 @@ app.get('/api/tasks/pending', verifyToken, async (req, res) => {
         res.json(pendingTasks);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching pending tasks: ' + error.message });
+    }
+});
+
+app.get('/api/tasks/by-priority/:minPriority', verifyToken, async (req, res) => {
+    try {
+        const tasks = await findTasksByPriority(req.user.id, parseInt(req.params.minPriority));
+        res.json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching tasks by priority: ' + error.message });
+    }
+});
+
+app.get('/api/tasks/overdue', verifyToken, async (req, res) => {
+    try {
+        const overdueTasks = await findOverdueTasks(req.user.id);
+        res.json(overdueTasks);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching overdue tasks: ' + error.message });
+    }
+});
+
+app.get('/api/tasks/parallel', verifyToken, async (req, res) => {
+    try {
+        const parallelTasks = await findTasksForParallelExecution(req.user.id);
+        res.json(parallelTasks);
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error fetching tasks for parallel execution: ' + error.message
+        });
+    }
+});
+
+app.get('/api/tasks/completed', verifyToken, async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const completedTasks = await findCompletedTasksInDateRange(
+            req.user.id,
+            new Date(startDate),
+            new Date(endDate)
+        );
+        res.json(completedTasks);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching completed tasks: ' + error.message });
     }
 });
 

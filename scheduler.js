@@ -9,7 +9,6 @@ import { getTextTogether } from './together.js';
 import { emailSignature } from './email.js';
 import {
     executePython,
-    addCalendarEvent,
     generateImage,
     findPendingTasks,
     findOverdueTasks,

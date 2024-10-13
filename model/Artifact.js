@@ -22,7 +22,7 @@ const artifactSchema = new mongoose.Schema(
         },
         metadata: {
             type: Map,
-            of: String,
+            of: mongoose.Schema.Types.Mixed,
             default: {}
         },
         tags: [String],
@@ -43,6 +43,45 @@ const artifactSchema = new mongoose.Schema(
         executorModel: {
             type: String,
             enum: ['gemini', 'claude', 'gpt', 'together']
+        },
+        createdBy: {
+            type: String,
+            enum: ['user', 'ai'],
+            default: 'ai'
+        },
+        lastModifiedBy: {
+            type: String,
+            enum: ['user', 'ai'],
+            default: 'ai'
+        },
+        collaborators: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            }
+        ],
+        parentArtifact: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Artifact'
+        },
+        childArtifacts: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Artifact'
+            }
+        ],
+        revisionHistory: [
+            {
+                version: Number,
+                content: String,
+                modifiedBy: String,
+                modifiedAt: Date
+            }
+        ],
+        expirationDate: Date,
+        isArchived: {
+            type: Boolean,
+            default: false
         }
     },
     { timestamps: true }
@@ -50,10 +89,19 @@ const artifactSchema = new mongoose.Schema(
 
 artifactSchema.index({ user: 1, name: 1 }, { unique: true });
 artifactSchema.index({ tags: 1 });
+artifactSchema.index({ type: 1 });
+artifactSchema.index({ createdAt: -1 });
 
-artifactSchema.methods.updateContent = async function (newContent) {
+artifactSchema.methods.updateContent = async function (newContent, modifiedBy = 'ai') {
+    this.revisionHistory.push({
+        version: this.version,
+        content: this.content,
+        modifiedBy: this.lastModifiedBy,
+        modifiedAt: this.updatedAt
+    });
     this.content = newContent;
     this.version += 1;
+    this.lastModifiedBy = modifiedBy;
     return this.save();
 };
 
@@ -88,6 +136,37 @@ artifactSchema.methods.setExecutorModel = async function (model) {
     return this.save();
 };
 
+artifactSchema.methods.addCollaborator = async function (userId) {
+    if (!this.collaborators.includes(userId)) {
+        this.collaborators.push(userId);
+        return this.save();
+    }
+    return this;
+};
+
+artifactSchema.methods.removeCollaborator = async function (userId) {
+    this.collaborators = this.collaborators.filter((id) => !id.equals(userId));
+    return this.save();
+};
+
+artifactSchema.methods.addChildArtifact = async function (childArtifactId) {
+    if (!this.childArtifacts.includes(childArtifactId)) {
+        this.childArtifacts.push(childArtifactId);
+        return this.save();
+    }
+    return this;
+};
+
+artifactSchema.methods.archive = async function () {
+    this.isArchived = true;
+    return this.save();
+};
+
+artifactSchema.methods.unarchive = async function () {
+    this.isArchived = false;
+    return this.save();
+};
+
 artifactSchema.statics.findByUserAndType = function (userId, type) {
     return this.find({ user: userId, type: type });
 };
@@ -98,6 +177,22 @@ artifactSchema.statics.findByUserAndTags = function (userId, tags) {
 
 artifactSchema.statics.findByTask = function (taskId) {
     return this.find({ task: taskId });
+};
+
+artifactSchema.statics.findRecentByUser = function (userId, limit = 10) {
+    return this.find({ user: userId }).sort({ createdAt: -1 }).limit(limit);
+};
+
+artifactSchema.statics.findByExecutorModel = function (userId, model) {
+    return this.find({ user: userId, executorModel: model });
+};
+
+artifactSchema.statics.findCollaborativeArtifacts = function (userId) {
+    return this.find({ collaborators: userId });
+};
+
+artifactSchema.statics.findNonArchivedByUser = function (userId) {
+    return this.find({ user: userId, isArchived: false });
 };
 
 export const Artifact = mongoose.model('Artifact', artifactSchema);
