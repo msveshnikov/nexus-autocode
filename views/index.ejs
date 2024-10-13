@@ -57,6 +57,41 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+            .hero {
+                position: relative;
+                overflow: hidden;
+            }
+            .hero::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(
+                    45deg,
+                    rgba(26, 35, 126, 0.7),
+                    rgba(110, 255, 245, 0.7)
+                );
+                z-index: 1;
+            }
+            .hero-content {
+                position: relative;
+                z-index: 2;
+            }
+            .feature-card {
+                transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            }
+            .feature-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+            .design-card {
+                transition: transform 0.3s ease-in-out;
+            }
+            .design-card:hover {
+                transform: scale(1.05);
+            }
         </style>
     </head>
     <body class="flex flex-col min-h-screen">
@@ -76,6 +111,11 @@
                             >
                         </li>
                         <li>
+                            <a href="#roadmap" class="hover:text-secondary transition-colors"
+                                >Roadmap</a
+                            >
+                        </li>
+                        <li>
                             <a href="/login" class="hover:text-secondary transition-colors"
                                 >Login</a
                             >
@@ -92,23 +132,23 @@
 
         <main class="flex-grow">
             <section
-                class="hero parallax h-screen flex items-center relative"
+                class="hero parallax h-screen flex items-center"
                 style="background-image: url('/AI.png')"
             >
-                <div class="absolute inset-0 bg-black opacity-60"></div>
-                <div class="container mx-auto text-center relative z-1 text-white">
-                    <h1 class="text-4xl font-bold mb-4 animate-fade-in">
+                <div class="container mx-auto text-center hero-content">
+                    <h1 class="text-5xl font-bold mb-4 text-white animate-fade-in">
                         Nexus: Agentic AI Framework
                     </h1>
-                    <p class="text-xl mb-8 animate-fade-in">
+                    <p class="text-xl mb-8 text-white animate-fade-in">
                         Revolutionize complex task solving with advanced AI collaboration and
                         seamless tool integration
                     </p>
                     <a
                         href="/app"
                         class="bg-secondary text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-colors animate-fade-in"
-                        >Get Started</a
                     >
+                        Get Started
+                    </a>
                 </div>
             </section>
 
@@ -118,7 +158,9 @@
                         Key Features
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
+                        <div
+                            class="feature-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Multi-agent Collaboration
                             </h3>
@@ -127,7 +169,9 @@
                                 harmony to tackle complex challenges.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
+                        <div
+                            class="feature-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Dynamic Tool Selection
                             </h3>
@@ -136,7 +180,9 @@
                                 unique task, optimizing efficiency and results.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
+                        <div
+                            class="feature-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 External API Integration
                             </h3>
@@ -145,7 +191,9 @@
                                 sources to enhance capabilities and insights.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
+                        <div
+                            class="feature-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Task Decomposition
                             </h3>
@@ -154,7 +202,9 @@
                                 processing and parallel execution.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
+                        <div
+                            class="feature-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Adaptive Learning
                             </h3>
@@ -163,7 +213,9 @@
                                 feedback, and cutting-edge machine learning techniques.
                             </p>
                         </div>
-                        <div class="feature p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in">
+                        <div
+                            class="feature-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
                             <h3 class="text-xl font-semibold mb-4 text-primary">
                                 Real-time Decision Making
                             </h3>
@@ -209,15 +261,53 @@
                             </ul>
                         </div>
                         <div class="design-card p-6 bg-white rounded-lg shadow-md animate-fade-in">
+                            <h3 class="text-xl font-semibold mb-4 text-primary">Architecture</h3>
+                            <ul class="list-disc pl-5">
+                                <li>Modular design for easy extension</li>
+                                <li>Microservices-based approach</li>
+                                <li>Event-driven communication</li>
+                                <li>Containerization for deployment</li>
+                                <li>Service mesh for inter-service communication</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="roadmap" class="py-20 bg-white">
+                <div class="container mx-auto">
+                    <h2 class="text-4xl font-bold text-center mb-12 text-primary animate-fade-in">
+                        Development Roadmap
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div
+                            class="roadmap-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
+                            <h3 class="text-xl font-semibold mb-4 text-primary">Current Focus</h3>
+                            <ul class="list-disc pl-5">
+                                <li>
+                                    Implement web dashboard for task initiation and progress
+                                    tracking
+                                </li>
+                                <li>Develop RESTful API endpoints for task management</li>
+                                <li>Implement real-time updates using WebSockets</li>
+                                <li>
+                                    Create scheduling for resolving tasks and breaking into subtasks
+                                </li>
+                            </ul>
+                        </div>
+                        <div
+                            class="roadmap-card p-6 bg-gray-100 rounded-lg shadow-md animate-fade-in"
+                        >
                             <h3 class="text-xl font-semibold mb-4 text-primary">
-                                Security and Privacy
+                                Future Enhancements
                             </h3>
                             <ul class="list-disc pl-5">
-                                <li>Role-based access control</li>
-                                <li>Audit logging for all actions</li>
-                                <li>Compliance with data protection regulations</li>
-                                <li>Secure API key handling</li>
-                                <li>End-to-end encryption</li>
+                                <li>Implement advanced analytics and reporting features</li>
+                                <li>Add full logs for AI model calls</li>
+                                <li>Implement auto-refresh for task logs and artifacts</li>
+                                <li>Enhance logs with colorful formatting</li>
+                                <li>Develop loop of execution/splitting/thinking/creating</li>
                             </ul>
                         </div>
                     </div>
