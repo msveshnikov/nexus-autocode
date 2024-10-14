@@ -143,8 +143,8 @@ taskSchema.methods.updateCost = function (cost) {
     return this.save();
 };
 
-taskSchema.statics.findPendingTasks = function (userId) {
-    return this.find({ user: userId, status: 'pending' }).sort({ priority: -1, dueDate: 1 });
+taskSchema.statics.findPendingTasks = function () {
+    return this.find({ status: 'pending' }).sort({ priority: -1, dueDate: 1 });
 };
 
 taskSchema.statics.findTasksByPriority = function (userId, minPriority) {

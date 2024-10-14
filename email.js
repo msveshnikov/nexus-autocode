@@ -94,12 +94,10 @@ export async function handleIncomingEmails() {
                                                 }
                                             }
                                         }
-                                        const userInfo = [...user.info.entries()]
-                                            .map(([key, value]) => `${key}: ${value}`)
-                                            .join(', ');
+                            
 
                                         const response = await getTextClaude(
-                                            `Subject: ${emailFrom.subject} User information: ${userInfo} Human: ${emailBody} Assistant:`.slice(
+                                            `Subject: ${emailFrom.subject} Human: ${emailBody} Assistant:`.slice(
                                                 -MAX_CONTEXT_LENGTH
                                             ),
                                             0.7,

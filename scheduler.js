@@ -74,10 +74,10 @@ export const executeTask = async (task) => {
     task.status = 'in_progress';
     await task.save();
 
-    const userInfo = [...task.user.info.entries()]
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(', ');
-    const prompt = `User information: ${userInfo}\nTask: ${task.description}\nExecute the task:`;
+    // const userInfo = [...task.user?.info?.entries()]
+    //     .map(([key, value]) => `${key}: ${value}`)
+    //     .join(', ');
+    const prompt = `User information: \nTask: ${task.description}\nExecute the task:`;
 
     let result;
     switch (task.user.preferredModel) {

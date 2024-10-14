@@ -314,7 +314,7 @@ export async function addExecutionLogToTask(taskId, log) {
         throw error;
     }
 }
- 
+
 export async function setTaskMetadata(taskId, key, value) {
     try {
         const task = await Task.findById(taskId);
@@ -329,9 +329,9 @@ export async function setTaskMetadata(taskId, key, value) {
     }
 }
 
-export async function findPendingTasks(userId) {
+export async function findPendingTasks() {
     try {
-        return await Task.findPendingTasks(userId);
+        return await Task.findPendingTasks();
     } catch (error) {
         console.error('Error finding pending tasks:', error);
         throw error;
@@ -347,18 +347,18 @@ export async function findTasksByPriority(userId, minPriority) {
     }
 }
 
-export async function findOverdueTasks(userId) {
+export async function findOverdueTasks() {
     try {
-        return await Task.findOverdueTasks(userId);
+        return await Task.findOverdueTasks();
     } catch (error) {
         console.error('Error finding overdue tasks:', error);
         throw error;
     }
 }
 
-export async function findTasksForParallelExecution(userId) {
+export async function findTasksForParallelExecution() {
     try {
-        return await Task.findTasksForParallelExecution(userId);
+        return await Task.findTasksForParallelExecution();
     } catch (error) {
         console.error('Error finding tasks for parallel execution:', error);
         throw error;

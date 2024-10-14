@@ -144,5 +144,3 @@ https://nexus.autocode.work/
 -   Integrate with popular project management tools (e.g., Jira, Trello)
 
 # TODO
-
--  fix no userId param in scheduler call to findPendingTasks() - you should process pending tasks from all users

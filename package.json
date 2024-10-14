@@ -7,6 +7,7 @@
     "scripts": {
         "start": "node index.js",
         "dev": "nodemon index.js",
+        "copy": "copy.cmd",
         "lint": "eslint .",
         "format": "prettier --write .",
         "autocode": "npx autocode-ai"

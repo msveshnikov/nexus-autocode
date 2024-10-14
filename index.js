@@ -18,14 +18,37 @@ import {
 import { User } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
 import { Task } from './model/Task.js';
-import { executeTask, initializeScheduler, scheduleTask, stopScheduledTask } from './scheduler.js';
+import {
+    executeTask,
+    initializeScheduler,
+    scheduleTask,
+    stopScheduledTask,
+    getScheduledTasks,
+    createSubTask,
+    parallelTaskExecution
+} from './scheduler.js';
 import { handleToolCall } from './tools.js';
 import {
     findPendingTasks,
     findTasksByPriority,
     findOverdueTasks,
     findTasksForParallelExecution,
-    findCompletedTasksInDateRange
+    findCompletedTasksInDateRange,
+    processFile,
+    processUrlContent,
+    executePython,
+    getStockPrice,
+    getFxRate,
+    saveArtifact,
+    generateImage,
+    initiateTask,
+    updateTaskStatus,
+    addSubTask,
+    assignAgentToTask,
+    addToolToTask,
+    addArtifactToTask,
+    addExecutionLogToTask,
+    setTaskMetadata
 } from './utils.js';
 
 dotenv.config({ override: true });
@@ -292,6 +315,25 @@ app.post('/api/tasks/:id/stop-schedule', verifyToken, async (req, res) => {
     }
 });
 
+app.get('/api/tasks/scheduled', verifyToken, async (req, res) => {
+    try {
+        const scheduledTasks = await getScheduledTasks(req.user.id);
+        res.json(scheduledTasks);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching scheduled tasks: ' + error.message });
+    }
+});
+
+app.post('/api/tasks/:id/subtask', verifyToken, async (req, res) => {
+    try {
+        const { description } = req.body;
+        const subTask = await createSubTask(req.params.id, { description });
+        res.json(subTask);
+    } catch (error) {
+        res.status(500).json({ error: 'Error creating subtask: ' + error.message });
+    }
+});
+
 app.get('/api/tasks/pending', verifyToken, async (req, res) => {
     try {
         const pendingTasks = await findPendingTasks(req.user.id);
@@ -341,6 +383,165 @@ app.get('/api/tasks/completed', verifyToken, async (req, res) => {
         res.json(completedTasks);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching completed tasks: ' + error.message });
+    }
+});
+
+app.post('/api/execute-parallel', verifyToken, async (req, res) => {
+    try {
+        await parallelTaskExecution();
+        res.json({ message: 'Parallel task execution initiated' });
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error initiating parallel task execution: ' + error.message
+        });
+    }
+});
+
+app.post('/api/process-file', verifyToken, async (req, res) => {
+    try {
+        const { fileBytesBase64, fileType, userInput } = req.body;
+        const result = await processFile(fileBytesBase64, fileType, userInput);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error processing file: ' + error.message });
+    }
+});
+
+app.post('/api/process-url', verifyToken, async (req, res) => {
+    try {
+        const { userInput } = req.body;
+        const result = await processUrlContent(userInput);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error processing URL content: ' + error.message });
+    }
+});
+
+app.post('/api/execute-python', verifyToken, async (req, res) => {
+    try {
+        const { code } = req.body;
+        const result = await executePython(code);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error executing Python code: ' + error.message });
+    }
+});
+
+app.get('/api/stock-price/:ticker', verifyToken, async (req, res) => {
+    try {
+        const result = await getStockPrice(req.params.ticker);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching stock price: ' + error.message });
+    }
+});
+
+app.get('/api/fx-rate/:baseCurrency/:quoteCurrency', verifyToken, async (req, res) => {
+    try {
+        const result = await getFxRate(req.params.baseCurrency, req.params.quoteCurrency);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching FX rate: ' + error.message });
+    }
+});
+
+app.post('/api/save-artifact', verifyToken, async (req, res) => {
+    try {
+        const { artifactName, content, type } = req.body;
+        const result = await saveArtifact(artifactName, content, type, req.user.id);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error saving artifact: ' + error.message });
+    }
+});
+
+app.post('/api/generate-image', verifyToken, async (req, res) => {
+    try {
+        const { description } = req.body;
+        const result = await generateImage(description);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error generating image: ' + error.message });
+    }
+});
+
+app.post('/api/initiate-task', verifyToken, async (req, res) => {
+    try {
+        const { taskDescription, model } = req.body;
+        const result = await initiateTask(taskDescription, req.user.id, model);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error initiating task: ' + error.message });
+    }
+});
+
+app.put('/api/update-task-status/:taskId', verifyToken, async (req, res) => {
+    try {
+        const { newStatus } = req.body;
+        const result = await updateTaskStatus(req.params.taskId, newStatus);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating task status: ' + error.message });
+    }
+});
+
+app.post('/api/add-subtask/:parentTaskId', verifyToken, async (req, res) => {
+    try {
+        const { subTaskDescription } = req.body;
+        const result = await addSubTask(req.params.parentTaskId, subTaskDescription);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error adding subtask: ' + error.message });
+    }
+});
+
+app.post('/api/assign-agent/:taskId', verifyToken, async (req, res) => {
+    try {
+        const { agentId } = req.body;
+        const result = await assignAgentToTask(req.params.taskId, agentId);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error assigning agent to task: ' + error.message });
+    }
+});
+
+app.post('/api/add-tool/:taskId', verifyToken, async (req, res) => {
+    try {
+        const { toolName } = req.body;
+        const result = await addToolToTask(req.params.taskId, toolName);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error adding tool to task: ' + error.message });
+    }
+});
+
+app.post('/api/add-artifact/:taskId', verifyToken, async (req, res) => {
+    try {
+        const { artifactId } = req.body;
+        const result = await addArtifactToTask(req.params.taskId, artifactId);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error adding artifact to task: ' + error.message });
+    }
+});
+
+app.post('/api/add-execution-log/:taskId', verifyToken, async (req, res) => {
+    try {
+        const { log } = req.body;
+        const result = await addExecutionLogToTask(req.params.taskId, log);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error adding execution log to task: ' + error.message });
+    }
+});
+
+app.post('/api/set-task-metadata/:taskId', verifyToken, async (req, res) => {
+    try {
+        const { key, value } = req.body;
+        const result = await setTaskMetadata(req.params.taskId, key, value);
+        res.json({ result });
+    } catch (error) {
+        res.status(500).json({ error: 'Error setting task metadata: ' + error.message });
     }
 });
 

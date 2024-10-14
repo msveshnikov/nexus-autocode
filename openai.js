@@ -3,7 +3,6 @@ import { handleToolCall, tools } from './tools.js';
 import { renameProperty } from './gemini.js';
 import dotenv from 'dotenv';
 import { MAX_CONTEXT_LENGTH } from './index.js';
-import { User } from './model/User.js';
 import { Task } from './model/Task.js';
 
 dotenv.config({ override: true });
@@ -93,12 +92,7 @@ export const executeTask = async (taskId) => {
     task.status = 'in_progress';
     await task.save();
 
-    const user = await User.findById(task.user);
-    const prompt = `Execute the following task: ${task.description}\nUser information: ${[
-        ...user.info.entries()
-    ]
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(', ')}`;
+    const prompt = `Execute the following task: ${task.description}`;
 
     try {
         const result = await getTextGpt(prompt, 0.7, null, null, task.user, task.model, true);

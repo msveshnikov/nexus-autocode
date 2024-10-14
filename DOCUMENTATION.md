@@ -155,7 +155,7 @@ functionality.
 ```
 server {
     server_name nexus.autocode.work;
- 
+
     location / {
         include /etc/nginx/proxy_params;
         proxy_pass          http://localhost:8004;
