@@ -80,65 +80,35 @@ export const executeTask = async (task) => {
     const prompt = `User information: \nTask: ${task.description}\nExecute the task:`;
 
     let result;
-    switch (task.user.preferredModel) {
+    switch (task.model) {
         case 'gpt-4':
         case 'gpt-3.5-turbo':
-            result = await getTextGpt(
-                prompt,
-                0.7,
-                null,
-                null,
-                task.user._id,
-                task.user.preferredModel,
-                true
-            );
+            result = await getTextGpt(prompt, 0.7, null, null, task.user._id, task.model, true);
             break;
         case 'gemini-pro':
         case 'gemini-1.5-pro-001':
-            result = await getTextGemini(
-                prompt,
-                0.7,
-                null,
-                null,
-                task.user._id,
-                task.user.preferredModel,
-                true
-            );
+            result = await getTextGemini(prompt, 0.7, null, null, task.user._id, task.model, true);
             break;
         case 'claude-3-opus-20240229':
         case 'claude-3-sonnet-20240229':
-            result = await getTextClaude(
-                prompt,
-                0.7,
-                null,
-                null,
-                task.user._id,
-                task.user.preferredModel,
-                true
-            );
+            result = await getTextClaude(prompt, 0.7, null, null, task.user._id, task.model, true);
             break;
         default:
-            result = await getTextTogether(
-                prompt,
-                0.7,
-                task.user._id,
-                task.user.preferredModel,
-                true
-            );
+            result = await getTextTogether(prompt, 0.7, task.user._id, task.model, true);
     }
-
-    task.addExecutionLog(result);
+    console.log(result);
+    await task.addExecutionLog(result);
 
     if (task.tools.includes('python')) {
         const pythonResult = await executePython(result);
-        task.addExecutionLog(`Python execution result: ${pythonResult}`);
+        await task.addExecutionLog(`Python execution result: ${pythonResult}`);
     }
 
     if (task.tools.includes('image_generation')) {
         const imagePrompt = extractImagePrompt(result);
         if (imagePrompt) {
             const imageResult = await generateImage(imagePrompt);
-            task.addExecutionLog(`Image generated: ${imageResult}`);
+            await task.addExecutionLog(`Image generated: ${imageResult}`);
         }
     }
 
