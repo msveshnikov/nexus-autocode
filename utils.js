@@ -206,7 +206,7 @@ export async function generateImage(description) {
     }
 }
 
-export async function initiateTask(taskDescription, userId) {
+export async function initiateTask(taskDescription, userId, model) {
     try {
         const user = await User.findById(userId);
         user.totalTasks = (user?.totalTasks || 0) + 1;
@@ -217,7 +217,7 @@ export async function initiateTask(taskDescription, userId) {
             title: taskDescription,
             description: taskDescription,
             status: 'pending',
-            model: 'gpt-3.5-turbo'
+            model: model || 'gpt-3.5-turbo'
         });
         await task.save();
 

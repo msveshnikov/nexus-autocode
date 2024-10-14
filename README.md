@@ -145,30 +145,4 @@ https://nexus.autocode.work/
 
 # TODO
 
--   Make landing design super cool with parallax and animations and add more info
--   Create scheduling for resolving task (and breaking into subtasks)
--   After initiation task should be in queue for execution
--   Execute pending tasks
--   Add full logs for AI model calls
--   Auto refresh task logs and artifacts
--   Make logs colorful
--   Add loop of execution/splitting/thinking/creating/ etc
--   Implement user authentication and authorization system
--   Develop a plugin marketplace for community contributions
--   Create a comprehensive test suite for all components
--   Implement a feedback loop for continuous AI model improvement
--   Develop a CLI tool for local task management and system control
--   Create interactive tutorials for new users
--   Implement a recommendation system for tool selection
--   Develop a visual workflow builder for complex tasks
--   Implement multi-language support for the UI
--   Create a public API for third-party integrations
-
-## Contributing
-
-We welcome contributions from the community! Please check our
-[Contributing Guidelines](CONTRIBUTING.md) for more information on how to get started.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+-  fix no userId param in scheduler

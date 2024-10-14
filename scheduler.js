@@ -156,7 +156,9 @@ export const executeTask = async (task) => {
 };
 
 export const processTaskQueue = async () => {
+    console.log('processTaskQueue');
     const pendingTasks = await findPendingTasks();
+    console.log(pendingTasks);
     for (const task of pendingTasks) {
         try {
             await executeTask(task);
@@ -170,7 +172,7 @@ export const processTaskQueue = async () => {
 };
 
 export const initializeScheduler = () => {
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule('*/1 * * * *', async () => {
         await processTaskQueue();
     });
 
