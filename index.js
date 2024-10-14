@@ -15,19 +15,12 @@ import {
     resetPassword,
     completePasswordReset
 } from './auth.js';
-import { User, addUserCoins, countTokens, storeUsageStats } from './model/User.js';
+import { User } from './model/User.js';
 import { Artifact } from './model/Artifact.js';
 import { Task } from './model/Task.js';
-import { getTextGemini, getTextGeminiFinetune } from './gemini.js';
-import { getTextClaude } from './claude.js';
-import { getTextTogether } from './together.js';
-import { getTextGpt } from './openai.js';
-import { getImage } from './image.js';
 import { executeTask, initializeScheduler, scheduleTask, stopScheduledTask } from './scheduler.js';
 import { handleToolCall } from './tools.js';
 import {
-    processFile,
-    processUrlContent,
     findPendingTasks,
     findTasksByPriority,
     findOverdueTasks,
@@ -80,65 +73,6 @@ mongoose
     .catch((err) => console.error('MongoDB connection error:', err));
 
 export let toolsUsed = [];
-
-app.post('/interact', verifyToken, async (req, res) => {
-    try {
-        toolsUsed = [];
-        let {
-            input: userInput,
-            chatHistory,
-            temperature,
-            fileBytesBase64,
-            fileType,
-            tools: webTools,
-            lang,
-            model
-        } = req.body;
-        const country = req.headers['geoip_country_code'];
-        const user = await User.findById(req.user.id);
-
-        if (fileBytesBase64) {
-            userInput = await processFile(fileBytesBase64, fileType, userInput);
-            fileType = '';
-        }
-
-        userInput = await processUrlContent(userInput);
-
-        const contextPrompt = buildContextPrompt(
-            '',
-            chatHistory,
-            country,
-            lang,
-            user,
-            userInput,
-            model
-        );
-
-        let textResponse = await getModelResponse(
-            model,
-            contextPrompt,
-            temperature,
-            fileBytesBase64,
-            fileType,
-            req.user.id,
-            webTools
-        );
-
-        const imageResponse = await processImageRequest(userInput, textResponse);
-
-        res.json({
-            textResponse,
-            imageResponse,
-            toolsUsed,
-            artifact: await Artifact.find({ user: req.user.id }).sort({ updatedAt: -1 }).limit(1)
-        });
-
-        addUserCoins(req.user.id, 1);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Model Returned Error: ' + error.message });
-    }
-});
 
 app.get('/api/artifacts', verifyToken, async (req, res) => {
     try {
@@ -455,77 +389,3 @@ initializeScheduler();
 server.listen(3000, () => {
     console.log(`🚀 Server started on port 3000`);
 });
-
-function buildContextPrompt(instructions, chatHistory, country, lang, user, userInput, model) {
-    const userInfo = [...user.info.entries()].map(([key, value]) => `${key}: ${value}`).join(', ');
-    const systemPrompt = 'You are a helpful AI assistant.';
-    return model?.startsWith('ft')
-        ? `System: ${instructions} ${chatHistory
-              .map((chat) => `Human: ${chat.user}\nAssistant:${chat.assistant}`)
-              .join('\n')}
-          \nHuman: ${userInput}\nAssistant:`.slice(-MAX_CONTEXT_LENGTH)
-        : `System: ${instructions || systemPrompt} User country code: ${country} User Lang: ${lang}
-          ${chatHistory
-              .map((chat) => `Human: ${chat.user}\nAssistant:${chat.assistant}`)
-              .join('\n')}
-          \nUser information: ${userInfo}
-          \nHuman: ${userInput || "what's this"}\nAssistant:`.slice(-MAX_CONTEXT_LENGTH);
-}
-
-async function getModelResponse(
-    model,
-    contextPrompt,
-    temperature,
-    fileBytesBase64,
-    fileType,
-    userId,
-    webTools
-) {
-    const inputTokens = countTokens(contextPrompt);
-    let textResponse;
-    if (model?.startsWith('gemini')) {
-        textResponse = await getTextGemini(
-            contextPrompt,
-            temperature,
-            fileBytesBase64,
-            fileType,
-            userId,
-            model,
-            webTools
-        );
-    } else if (model?.startsWith('tunedModels')) {
-        textResponse = await getTextGeminiFinetune(contextPrompt, temperature, model);
-    } else if (model?.startsWith('claude')) {
-        textResponse = await getTextClaude(
-            contextPrompt,
-            temperature,
-            fileBytesBase64,
-            fileType,
-            userId,
-            model,
-            webTools
-        );
-    } else if (model?.startsWith('gpt') || model?.startsWith('ft:gpt')) {
-        textResponse = await getTextGpt(
-            contextPrompt,
-            temperature,
-            fileBytesBase64,
-            fileType,
-            userId,
-            model,
-            webTools
-        );
-    } else {
-        textResponse = await getTextTogether(contextPrompt, temperature, userId, model, webTools);
-    }
-    const outputTokens = countTokens(textResponse);
-    storeUsageStats(userId, model, inputTokens, outputTokens, 0);
-    return textResponse;
-}
-
-async function processImageRequest(userInput, textResponse) {
-    if (userInput?.toLowerCase().includes('paint') || userInput?.toLowerCase().includes('draw')) {
-        return await getImage(userInput?.substr(0, 200) + textResponse?.substr(0, 300));
-    }
-    return null;
-}

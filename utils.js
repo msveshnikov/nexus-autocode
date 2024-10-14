@@ -314,7 +314,7 @@ export async function addExecutionLogToTask(taskId, log) {
         throw error;
     }
 }
-
+ 
 export async function setTaskMetadata(taskId, key, value) {
     try {
         const task = await Task.findById(taskId);
