@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
+        totalTasks: {
+            type: Number,
+            default: 0
+        },
         info: {
             type: Map,
             of: String,

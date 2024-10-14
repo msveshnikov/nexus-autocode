@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import { fetchPageContent } from './search.js';
 import { contentFolder, MAX_SEARCH_RESULT_LENGTH } from './index.js';
 import axios from 'axios';
-import ical from 'ical-generator';
 import { User } from './model/User.js';
 import { Task } from './model/Task.js';
 import { Artifact } from './model/Artifact.js';

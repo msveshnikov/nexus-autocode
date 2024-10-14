@@ -134,20 +134,6 @@ export const executeTask = async (task) => {
         task.addExecutionLog(`Python execution result: ${pythonResult}`);
     }
 
-    if (task.tools.includes('calendar')) {
-        const eventDetails = extractEventDetails(result);
-        if (eventDetails) {
-            const calendarResult = await addCalendarEvent(
-                eventDetails.title,
-                eventDetails.description,
-                eventDetails.startTime,
-                eventDetails.endTime,
-                task.user._id
-            );
-            task.addExecutionLog(`Calendar event added: ${calendarResult}`);
-        }
-    }
-
     if (task.tools.includes('image_generation')) {
         const imagePrompt = extractImagePrompt(result);
         if (imagePrompt) {
@@ -234,20 +220,6 @@ export const parallelTaskExecution = async () => {
     const executionPromises = tasks.map((task) => executeTask(task));
     await Promise.all(executionPromises);
 };
-
-function extractEventDetails(text) {
-    const regex = /Event: (.+)\nDescription: (.+)\nStart: (.+)\nEnd: (.+)/;
-    const match = text.match(regex);
-    if (match) {
-        return {
-            title: match[1],
-            description: match[2],
-            startTime: new Date(match[3]),
-            endTime: new Date(match[4])
-        };
-    }
-    return null;
-}
 
 function extractImagePrompt(text) {
     const regex = /Generate image: (.+)/;
