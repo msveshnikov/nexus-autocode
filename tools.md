@@ -2,97 +2,117 @@
 
 ## Overview
 
-The `tools.js` file is a central component of the project, defining and implementing various tools
-and functionalities that can be used throughout the application. It integrates with external APIs,
-handles user interactions, and provides utility functions for tasks such as sending emails,
-generating images, and managing user data.
+This file is a central component of the project, defining and managing various tools and functions
+that can be used across the application. It includes functionality for interacting with external
+services, managing tasks, sending messages, and performing various utility operations.
 
-## Imports
+The file exports an array of tool definitions (`tools`) and a function to handle tool calls
+(`handleToolCall`). It integrates with other parts of the project such as search functionality, user
+management, task scheduling, and various utility functions.
 
-The file imports various dependencies and modules:
+## Imported Modules and Dependencies
 
--   External libraries: `nodemailer`, `TelegramBot`, `ical`, `axios`
--   Internal modules: `search.js`, `User.js`, `Artifact.js`, `scheduler.js`, `index.js`,
-    `youtube.js`, `email.js`, `image.js`, `utils.js`
+-   `nodemailer`: For sending emails
+-   `TelegramBot`: For sending Telegram messages
+-   Various custom modules: `search.js`, `youtube.js`, `utils.js`, `scheduler.js`, `email.js`
+-   Models: `User.js`
 
-## Constants
-
--   `bot`: An instance of TelegramBot for sending messages.
--   `transporter`: A nodemailer transporter for sending emails.
-
-## Main Exports
+## Exported Objects and Functions
 
 ### `tools` Array
 
-An array of tool definitions, each containing:
+An array of tool definitions, each with the following structure:
 
--   `name`: The tool's identifier
--   `description`: A brief description of the tool's functionality
--   `input_schema`: Defines the expected input structure for the tool
+-   `name`: String identifier for the tool
+-   `description`: Brief description of the tool's functionality
+-   `input_schema`: JSON schema defining the expected input for the tool
 
-### `handleToolCall` Function
+### `handleToolCall(name, args, userId)`
 
-```javascript
-async function handleToolCall(name, args, userId)
-```
-
-This function dispatches tool calls to their respective implementations based on the tool name.
+Handles the execution of a specific tool based on its name and provided arguments.
 
 **Parameters:**
 
--   `name`: The name of the tool to be called
--   `args`: Arguments for the tool
--   `userId`: The ID of the user making the call
+-   `name`: String - The name of the tool to execute
+-   `args`: Object - Arguments required for the tool execution
+-   `userId`: String - ID of the user making the tool call
 
-**Returns:** The result of the tool execution
+**Returns:** Promise - Resolves with the result of the tool execution
 
-## Tool Implementations
+## Key Functions
 
-The file contains implementations for various tools, including:
+### `sendTelegramMessage(chatId, message)`
 
-2. `getStockPrice`: Retrieves stock price information
-3. `getFxRate`: Gets foreign exchange rates
-4. `sendTelegramMessage`: Sends a message via Telegram
-5. `sendEmail`: Sends an email
-6. `getCurrentTimeUTC`: Returns the current UTC time
-7. `getLatestNews`: Fetches the latest news articles
-8. `searchWebContent`: Performs a web search and fetches content
-9. `persistUserInfo`: Saves user information
-10. `removeUserInfo`: Removes user information and artifacts
-11. `addCalendarEvent`: Adds an event to the user's calendar
-12. `getUserSubscriptionInfo`: Retrieves user subscription details
-13. `awardAchievement`: Awards an achievement to a user
-14. `sendUserFeedback`: Sends user feedback to developers
-15. `saveArtifact`: Saves or updates an artifact
-16. `generateImage`: Generates an image based on a description
-17. `initiateTask`: Initiates a new task for a user
+Sends a message to a Telegram chat.
 
-## Usage Example
+### `sendEmail(to, subject, content, userId, attachments = [])`
+
+Sends an email using the configured SMTP transporter.
+
+### `getCurrentTimeUTC()`
+
+Returns the current time in UTC format.
+
+### `getLatestNews(lang)`
+
+Fetches and returns the latest news for a given language.
+
+### `searchWebContent(query)`
+
+Performs a web search and returns content from the top results.
+
+## Usage Examples
 
 ```javascript
-import { handleToolCall } from './tools.js';
-
-// Example: Send an email
-const emailResult = await handleToolCall(
-    'send_email',
+// Example: Sending a Telegram message
+await handleToolCall(
+    'send_telegram_message',
     {
-        to: 'user@example.com',
-        subject: 'Test Email',
-        content: 'This is a test email'
+        chatId: '123456789',
+        message: 'Hello from the AI assistant!'
     },
     'user123'
 );
-console.log(emailResult);
+
+// Example: Getting stock price
+const stockPrice = await handleToolCall(
+    'get_stock_price',
+    {
+        ticker: 'AAPL'
+    },
+    'user123'
+);
+
+// Example: Scheduling a task
+await handleToolCall(
+    'schedule_task',
+    {
+        taskId: 'task123',
+        schedule: '0 9 * * *'
+    },
+    'user123'
+);
 ```
 
 ## Project Context
 
 This file plays a crucial role in the project by:
 
-1. Defining a set of tools that can be used across the application
-2. Providing a unified interface for calling these tools
-3. Integrating with various external services and APIs
-4. Handling user-related operations and data management
+1. Defining a standardized set of tools that can be used across different AI models or interfaces.
+2. Providing a centralized way to handle various operations like sending messages, managing tasks,
+   and interacting with external services.
+3. Integrating with other parts of the project such as user management, task scheduling, and utility
+   functions.
 
-It interacts closely with other modules like `User.js`, `Artifact.js`, and various API-specific
-files to provide a comprehensive set of functionalities for the application.
+It serves as a bridge between the AI's capabilities and the actual execution of tasks in the system.
+
+## Notes
+
+-   The file relies heavily on environment variables for sensitive information (e.g., API keys).
+-   It integrates with various custom modules, indicating a modular project structure.
+-   The tool definitions follow a consistent schema, making it easy to add new tools or modify
+    existing ones.
+
+This documentation provides an overview of the `tools.js` file. For more detailed information on
+specific functions or tools, refer to the inline comments and the documentation of the imported
+modules.

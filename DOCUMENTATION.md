@@ -150,6 +150,41 @@ For production deployment, consider using Docker Compose with the provided `dock
 file, which includes services for the backend, MongoDB, and a Python shell for extended
 functionality.
 
+# NGINX config
+
+```
+server {
+    server_name nexus.autocode.work;
+ 
+    location / {
+        include /etc/nginx/proxy_params;
+        proxy_pass          http://localhost:8004;
+ 	    proxy_set_header        X-Real-IP       $remote_addr;
+	    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+	    proxy_set_header        GEOIP_COUNTRY_CODE $geoip2_data_country_iso_code;
+        proxy_connect_timeout       600;
+        proxy_send_timeout          600;
+        proxy_read_timeout          600;
+        send_timeout                600;
+        client_body_timeout         600;
+    }
+
+    location /socket.io/ {
+    	proxy_pass http://localhost:8004;
+    	proxy_http_version 1.1;
+	    proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+	    proxy_read_timeout 3600s;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/mangatv.shop-0004/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/mangatv.shop-0004/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+```
+
 ## Contributing
 
 Contributions to Nexus are welcome! Please follow these steps:
