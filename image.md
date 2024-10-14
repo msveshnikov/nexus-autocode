@@ -97,10 +97,9 @@ import { getImage } from './image.js';
 const prompt = 'A beautiful sunset over the ocean';
 const avatar = false;
 const userId = 'user123';
-const model = 'gpt-3.5-turbo';
 
 try {
-    const imageBase64 = await getImage(prompt, avatar, userId, model);
+    const imageBase64 = await getImage(prompt, avatar, userId);
     console.log('Generated image:', imageBase64.substring(0, 50) + '...');
 } catch (error) {
     console.error('Error generating image:', error);
