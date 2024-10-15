@@ -72,6 +72,7 @@ export const createSubTask = async (parentTaskId, subTaskData) => {
 
 export const executeTask = async (task) => {
     task.status = 'in_progress';
+    task.startTime = new Date();
     await task.save();
 
     // const userInfo = [...task.user?.info?.entries()]
@@ -96,7 +97,6 @@ export const executeTask = async (task) => {
         default:
             result = await getTextTogether(prompt, 0.7, task.user._id, task.model, true);
     }
-    console.log(result);
     await task.addExecutionLog(result);
 
     if (task.tools.includes('python')) {
@@ -113,6 +113,7 @@ export const executeTask = async (task) => {
     }
 
     task.status = 'completed';
+    task.endTime = new Date();
     await task.save();
 
     await sendEmail(
@@ -126,9 +127,7 @@ export const executeTask = async (task) => {
 };
 
 export const processTaskQueue = async () => {
-    console.log('processTaskQueue');
     const pendingTasks = await findPendingTasks();
-    console.log(pendingTasks);
     for (const task of pendingTasks) {
         try {
             await executeTask(task);
